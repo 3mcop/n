@@ -1,0 +1,10 @@
+
+name = Stage File Proxy
+description = Proxies files from production server so you don't have to transfer them manually
+core = 6.x
+; Information added by drupal.org packaging script on 2011-02-25
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "stage_file_proxy"
+datestamp = "1298620266"
+
