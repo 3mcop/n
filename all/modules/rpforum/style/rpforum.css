@@ -1,0 +1,562 @@
+table
+{
+  margin: 0;
+}
+tbody
+{
+  border: 0;
+}
+
+/* 
+display_main
+*/
+
+.rpforum-pager-top 
+{
+  border-bottom: 1px solid #ccc;
+}
+
+.rpforum-style-default .rpforum-container
+{
+  border: 1px solid #ccc;
+  margin-bottom: 20px;
+  margin-top: 10px;
+}
+
+.rpforum-search-enabled .rpforum-container
+{
+  margin-top: 0;
+}
+
+.rpforum-container .forum-icon
+{
+  width: 50px;
+  padding: 10px;
+  
+}
+
+.rpforum-container .container-forums .forum-topics,
+.rpforum-container .container-forums .forum-posts,
+.rpforum-container .container-forums th.forum-posts,
+.rpforum-container .container-forums th.forum-topics
+{
+  width: 40px;
+  text-align: center;
+}
+
+.rpforum-container .container-forums .forum-subforums {
+  font-size: 0.8em;
+}
+
+.rpforum-container .container-forums .forum-subforums .subforum-label {
+  font-weight: bold;
+}
+
+.rpforum-container .forum-icon-folder
+{
+  background: transparent url("images/forum-folder.png") no-repeat scroll center center;
+}
+
+.rpforum-feed-link {
+  text-align: right;
+}
+.rpforum-feed-link a
+{
+  background: transparent url("images/feed-icon.png") no-repeat scroll left center;
+  padding: 15px 0 15px 20px;
+}
+
+
+
+/*
+display topic...
+*/
+
+.rpforum-at-top {
+  border: 2px solid #ccc;
+  padding: 5px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.rpforum-container .forum-last-post
+{
+  min-width: 175px;
+  font-size: 0.9em;
+}
+
+.rpforum-message-last-on a {
+  background: transparent url("images/last_post.gif") no-repeat scroll left center;
+  padding-right: 15px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.rpforum-page-topic .topic-icon
+{
+  width: 20px;
+  padding: 5px;
+}
+
+.rpforum-page-topic .topic-default
+{
+  background: transparent url("images/topic-default.png") no-repeat scroll center center;
+}
+
+.rpforum-page-topic .topic-new
+{
+  background: transparent url("images/topic-new.png") no-repeat scroll center center;
+}
+
+.rpforum-page-topic .topic-sticky
+{
+  background: transparent url("images/topic-sticky.png") no-repeat scroll center center;
+}
+
+.rpforum-page-topic .topic-hot
+{
+  background: transparent url("images/topic-hot.png") no-repeat scroll center center;
+}
+
+.rpforum-page-topic .topic-hot-new
+{
+  background: transparent url("images/topic-hot-new.png") no-repeat scroll center center;
+}
+
+.rpforum-page-topic .topic-closed
+{
+  background: transparent url("images/topic-closed.png") no-repeat scroll center center;
+}
+
+
+
+.rpforum-page-topic .new-notice
+{
+  font-size: 0.8em;
+  color: red;
+  font-style: italic;
+}
+
+.view-rp-forum-view-topics .views-field-title
+{
+  width: 45%;
+}
+
+.view-rp-forum-view-topics .views-field-nothing-4,
+.view-rp-forum-view-topics .views-field-nothing-1,
+.view-rp-forum-view-topics .views-field-nothing
+{
+  text-align: center;
+}
+
+
+.rpforum-new-topic-link a,
+.reply-link a
+{
+  background: transparent url("images/reply.gif") no-repeat scroll left center;
+  padding: 15px 0 10px 30px;
+}
+
+
+
+
+/*
+  Forum posts...
+*/
+
+.reply-link {
+  margin-top: 10px;
+}
+
+
+.rpforum-topic-controls 
+{
+  text-align: right;
+  padding-bottom: 10px;
+}
+
+.rpforum-post, table.rpforum-post-teaser
+{
+  width: 100%;
+}
+
+.rpforum-post-odd
+{
+  background-color: #eee;
+}
+
+.rpforum-post, .rpforum-post table, table.rpforum-post-teaser
+{
+  margin: 0;
+}
+
+.rpforum-post {
+  clear: both;
+}
+
+/* Useful with some themes, to make this a clear: both; */
+.rpforum-between-author-info-and-post-content
+{
+  display: none;
+}
+
+.rpforum-post .rpforum-post-content
+{
+  display: table-cell;
+  width: 100%;
+  padding-left: 50px; 
+}
+
+.rpforum-post .rpforum-author-info
+{  
+  display: table-cell;
+  padding-left: 5px;
+}
+
+
+.rpforum-post .post-author
+{
+  font-weight: bold;
+}
+
+.rpforum-post .post-author-type,
+.rpforum-post .post-author-posts
+{
+  font-size: 0.8em;
+}
+
+.rpforum-post .post-author-star
+{
+  display: inline-block;
+  background: transparent url("images/star.gif") no-repeat scroll center center;
+  width: 17px;
+}
+
+.rpforum-post .post-author-star-admin
+{
+  display: inline-block;
+  background: transparent url("images/staradmin.gif") no-repeat scroll center center;
+  width: 17px;
+}
+
+
+.rpforum-post .post-title
+{
+  font-size: 0.8em;
+}
+
+.rpforum-post .post-date
+{
+  font-style: italic;
+  font-size: 0.8em;
+}
+
+.rpforum-post .post-body
+{
+  border-top: 1px solid #678751;
+  padding-top: 20px;
+  margin-top: 10px;
+  padding-bottom: 20px;  
+}
+
+
+.rpforum-post .post-signature
+{
+  border-top: 1px dashed #999;
+  font-size: 0.8em;
+  margin-bottom: 10px;  
+}
+
+.rpforum-post .post-control-links
+{
+  float: right;
+}
+
+.rpforum-post fieldset.fs-rpforum-admin-post-control-links {
+  margin-top: 0;
+}
+
+.rpforum-post .admin-post-control-links{
+  font-size: 0.8em;
+}
+
+
+
+.rpforum-post .post-ip-address {
+  font-style: italic;
+  font-size: 0.8em;
+}
+
+.rpforum-post .post-updated
+{
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+.rpforum-start-quote {
+  background-color: #E4EAF2;
+  font-size: 0.8em;
+}
+.rpforum-quote-body {
+  padding: 3px;
+  background-color: #F0F8FF;
+}
+
+.rpforum-quote {
+  border: 1px solid #ccc;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.view-rp-forum-view-posts .views-row-last
+{
+  border-bottom: 1px solid #ccc;
+}
+
+img.rpforum-message-icon-image
+{
+  position: relative;
+  top: 5px;
+}
+
+
+/*
+reply form
+*/
+#edit-field-parent-node-0-value-wrapper
+{
+  display: none;
+}
+
+#edit-field-body2-0-value-wrapper
+{
+  margin-top: 0px;
+}
+
+fieldset.hide-me, div.hide-me
+{
+  display: none;
+}
+
+.rpforum-page-reply
+{
+  margin-top: 40px;
+  
+}
+
+.rpforum-bbcode-buttons,
+.rpforum-smiley-buttons
+{
+  display: inline;
+}
+
+.rpforum-smiley-buttons
+{
+  padding-left: 10px;
+}
+
+#edit-field-message-icon-value-wrapper label
+{
+  display: inline;
+}
+
+
+/*
+  Teaser view.
+*/
+
+table.rpforum-post-teaser
+{
+  margin-bottom: 10px;
+}
+.rpforum-post-teaser td
+{
+  padding: 0;
+  padding: 2px;
+}
+.rpforum-post-teaser .post-teaser-header-row
+{
+  background-color: #D30303;
+  border-top: 2px solid #010100;
+  color: white;
+}
+
+.post-teaser-date
+{
+  text-align: right;
+}
+.post-teaser-quote-link
+{
+  text-align: right;
+}
+
+.rpforum-message-last-on, .rpforum-message-last-by,
+.rpforum-message-last-in
+{
+  font-size: 0.8em;
+  line-height: 1.5em;
+}
+
+/*
+  Confirm delete
+*/
+.rpforum-confirm-delete
+{
+  margin: 20px;
+  background-color: beige;
+  border: 1px dashed grey;
+  padding: 5px;
+}
+
+
+/*
+  Admin forum styles.
+*/
+#edit-rpforum-badge-posts-1-wrapper label,
+#edit-rpforum-badge-posts-2-wrapper label,
+#edit-rpforum-badge-posts-3-wrapper label,
+#edit-rpforum-badge-posts-4-wrapper label,
+#edit-rpforum-badge-posts-5-wrapper label,
+#edit-rpforum-badge-title-1-wrapper label,
+#edit-rpforum-badge-title-2-wrapper label,
+#edit-rpforum-badge-title-3-wrapper label,
+#edit-rpforum-badge-title-4-wrapper label,
+#edit-rpforum-badge-title-5-wrapper label,
+fieldset.list-subscriptions div.fieldset-wrapper div.form-item
+{
+  display: inline;
+}
+
+
+/*
+  User profile form styles
+*/
+
+.rpforum-edit-profile-link
+{
+  font-size: 1.1em;
+  font-weight: bold;
+  float: right;
+}
+
+
+/*
+  Search
+*/
+
+table.rpforum-search-table
+{
+  margin: 0;
+  padding: 0;
+}
+
+.rpforum-search-result
+{
+  border-bottom: 1px dashed #ccc;
+  margin-bottom: 10px;
+}
+
+.rpforum-search-result .post-teaser-header-row
+{
+  border-top: 0;
+}
+
+form#rpforum-search-form
+{
+  margin-bottom: 5px;
+}
+
+.rpforum-search-input-form #edit-search-string-wrapper,
+.rpforum-search-input-form #edit-search-string-1-wrapper
+{
+  display: inline;
+}
+
+.rpforum-search-top label
+{
+  display: none;
+}
+
+.rpforum-search-top form#rpforum-search-form 
+{
+  margin-bottom: 0;
+  text-align: right;
+}
+
+/*
+Login
+*/
+
+.rpforum-search-top input
+{
+  margin: 0;
+  padding: 0;
+}
+
+
+
+.rpforum-search-top .login-wrapper {
+  float: right;
+  padding-right: 15px;
+padding-bottom: 10px;
+  }
+
+.rpforum-search-top .search-wrapper {
+  float: right;
+  padding-right: 15px;
+  padding-bottom: 10px;
+}
+
+.rpforum-login-info #user-login-form
+{
+  margin: 0;
+  padding: 0;
+}
+
+.rpforum-login-info #edit-name-wrapper,
+.rpforum-login-info #edit-pass-wrapper
+{
+  margin: 0;
+  padding: 0;
+  display: inline;
+}
+
+.rpforum-login-info input
+{
+  width: 50px;
+  
+}
+
+.rpforum-login-info ul
+{
+  display: none;
+}
+
+#rpforum-forum-moderation-form, #center #rpforum-forum-moderation-form{
+  margin: 0;
+  padding: 0;
+}
+
+#rpforum-forum-moderation-form div, #rpforum-forum-moderation-form label {
+  display: inline-block;
+}
+
+.rpforum-recent-block-row {
+  padding-bottom: 10px;
+}
+
+.rpforum-recent-block-by-line {
+  font-size: 0.9em;
+  font-style: italic;
+  padding-left: 8px;
+}
+
+/*
+  Other pages and forms...
+*/
+
+li.rpforum-move-post div.form-item {
+  margin-top: 0;
+  margin-bottom: 0;
+  display: inline;
+}

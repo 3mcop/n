@@ -1,0 +1,358 @@
+<?php
+
+
+
+function rpforum_enable() {
+  if ($vocabulary = taxonomy_vocabulary_load(variable_get('rpforum_nav_vocabulary', 0))) {
+    // Existing install. Add back forum node type, if the forums
+    // vocabulary still exists. Keep all other node types intact there.
+    $vocabulary = (array) $vocabulary;
+    $vocabulary['nodes']['rp_forum_post'] = 1;
+    taxonomy_save_vocabulary($vocabulary);
+  }
+  else {
+    // Create the forum vocabulary if it does not exist. Assign the vocabulary
+    // a low weight so it will appear first in forum topic create and edit
+    // forms.
+    $vocabulary = array(
+      'name' => t('RP Forums'),
+      'multiple' => 0,
+      'required' => 0, 
+      'hierarchy' => 1,
+      'relations' => 0,
+      'module' => 'rpforum',
+      'weight' => -10,
+      'nodes' => array('rp_forum_post' => 1),
+    );
+    taxonomy_save_vocabulary($vocabulary);
+
+    variable_set('rpforum_nav_vocabulary', $vocabulary['vid']);
+  }
+}
+
+
+function rpforum_install() {
+  //make sure we create the rpforum_avatars directory upon install!
+  $folder = "./sites/default/files/rpforum_avatars";
+  if (!file_exists($folder))
+  {
+    if (!mkdir($folder))
+    {
+      drupal_set_message(t("RP Forums could not create an output folder for
+                      forum avatars.  Please create the following output
+                      folder: sites/default/files/rpforum_avatars, and make sure
+                      it has the appropriate permissions."));
+    }
+  }
+
+  // Make sure our weight is higher than others.
+  db_query("UPDATE {system} SET weight = 20 WHERE name = 'rpforum'");
+
+  
+  // Include important includes from the install_profile_api module
+  module_load_include('inc', 'install_profile_api', 'contrib/content_copy'); 
+  module_load_include('inc', 'install_profile_api', 'contrib/views'); 
+  
+  $dir = drupal_get_path('module', 'rpforum');
+    
+  // Now, create the content type.
+  if (function_exists("install_content_copy_import_from_file")) {
+    // Get path to the file where I pasted my CCK export, which is inside this module's folder
+    drupal_set_message("Attempting to install CCK...");
+    $file = $dir . '/import/rp_forum_post.cck.inc';
+    // Call function.  I want to create a new type, so I don't provide a second argument.
+    install_content_copy_import_from_file($file);
+  }
+  else {
+    drupal_set_message(t("RP Forums was not able to find the Install Profile API
+                        module.  As such, the CCK types for the RP Forum module
+                        have not been set up correctly."));
+  }
+  
+  // Install the necessary views
+  if (function_exists("install_views_ui_import_from_file")) {
+    drupal_set_message(t("Attempting to install Views..."));
+    $file = $dir . '/import/rp_forum_view_posts.view.inc';
+    install_views_ui_import_from_file($file, "rp_forum_view_posts");
+    
+    $file = $dir . '/import/rp_forum_view_topics.view.inc';
+    install_views_ui_import_from_file($file, "rp_forum_view_topics");
+  }
+  else {
+    drupal_set_message(t("RP Forums was not able to find the Install Profile API
+                        module.  As such, the Views for the RP Forum module
+                        have not been set up correctly."));    
+  }
+  
+  // Now, install the schema.
+  drupal_install_schema('rpforum');
+  
+  
+  
+}
+
+
+function rpforum_uninstall() {
+  
+  // Drop the tables
+  drupal_uninstall_schema('rpforum');
+}
+
+
+function rpforum_schema() {
+  
+$schema = array();
+
+$schema['rpforum_post_search_terms'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'nid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'term' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'varchar',
+      'length' => '100',
+      'not null' => TRUE,
+    ),
+  ),
+  'indexes' => array(
+    'nid' => array('nid'),
+    'term' => array('term'),
+  ),
+);
+
+$schema['rpforum_topic_views'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'nid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'count' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+  ),
+  'primary key' => array('nid'),
+);
+
+$schema['rpforum_topic_replies'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'nid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'count' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+  ),
+  'primary key' => array('nid'),
+);
+
+
+$schema['rpforum_user_has_read'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'cid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'serial',
+      'not null' => TRUE,
+    ),
+    'uid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'nid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'parent_node' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'status' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'varchar',
+      'length' => '10',
+      'not null' => TRUE,
+    ),
+  ),
+  'primary key' => array('cid'),
+  'indexes' => array(
+    'nid' => array('nid'),
+    'parent_node' => array('parent_node'),
+    'status' => array('status'),
+    'uid' => array('uid'),
+  ),
+);
+
+
+$schema['rpforum_post_search_data'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'sid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'serial',
+      'not null' => TRUE,
+    ),
+    'nid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'title' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => TRUE,
+    ),
+    'body' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'text',
+      'not null' => TRUE,
+    ),
+    'tid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'updated' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+  ),
+  'primary key' => array('sid'),
+  'indexes' => array(
+    'nid' => array('nid'),
+    'title' => array('title'),
+  ),
+);
+
+$schema['rpforum_post_details'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'did' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'serial',
+      'not null' => TRUE,
+    ),
+    'nid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'details' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'text',
+      'not null' => TRUE,
+    ),
+  ),
+  'primary key' => array('did'),
+  'indexes' => array(
+    'nid' => array('nid'),
+  ),
+);
+  
+$schema['rpforum_user_profiles'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'pid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'serial',
+      'not null' => TRUE,
+    ),
+    'uid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'profile_data' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'text',
+      'not null' => TRUE,
+    ),
+  ),
+  'primary key' => array('pid'),
+  'indexes' => array(
+    'uid' => array('uid'),
+  ),
+);
+
+$schema['rpforum_user_search_results'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'ssid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'varchar',
+      'length' => '32',
+      'not null' => TRUE,
+    ),
+    'nid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'score' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'datetime' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'datetime',
+      'not null' => TRUE,
+    ),
+  ),
+  'indexes' => array(
+    'score' => array('score'),
+    'ssid' => array('ssid'),
+  ),
+);
+
+$schema['rpforum_user_subscriptions'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'sid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'serial',
+      'not null' => TRUE,
+    ),
+    'uid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    'topic_nid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+  ),
+  'primary key' => array('sid'),
+  'indexes' => array(
+    'topic_nid' => array('topic_nid'),
+    'uid' => array('uid'),
+  ),
+);
+
+
+
+return $schema;
+
+}
+
+
+?>

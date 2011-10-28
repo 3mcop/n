@@ -1,0 +1,413 @@
+<?php
+/**
+ * Please NOTE!  This is a very, VERY rough converstion script I wrote
+ * primarily for my own purposes.  I was moving from an older SMF forum
+ * installation, version 114.
+ *
+ * This module will copy over the old topics and posts from SMF into
+ * RP Forum.  It will also copy over the users and facilitate users
+ * logging in using their names and passwords from SMF.
+ * 
+ * Before doing this, fully setup RP Forum to have the same forums
+ * as your SMF forum.  Edit the values in convert_from_smf114() to
+ * match your set up.
+ * 
+ * Then, visit example.com/rpf_conver/from_smf114 to convert sections at
+ * a time.
+ * 
+ * Good luck!
+ * 
+ */
+
+
+
+
+
+function rpf_convert_menu() {
+
+  $items = array();
+  
+  
+  $items["rpf_convert/from_smf114"] = array(
+    "title" => t("Convert smf 114 forum to use rpforum"),
+    "page callback" => "rpf_convert_from_smf114",
+    "access arguments" => array("administer rpf_convert"),
+    "type" => MENU_NORMAL_ITEM,
+  );
+
+  
+  return $items;
+}
+
+function rpf_convert_perm() {
+  return array("administer rpf_convert");
+}
+
+
+function rpf_convert_form_alter(&$form, $form_state, $form_id) {
+  
+  // We want to add our own validation hook into the
+  // login form's list of validators.
+  
+  
+  if($form_id == 'user_login' || $form_id == 'user_login_block'){
+    //looking for the original user authentication funct
+    $array_key = array_search('user_login_authenticate_validate', $form['#validate']);
+    
+    
+    
+    //can't find it. I'll rebuild the #validate array with my
+    //function called just before the final validator
+    if($array_key === FALSE){
+      $final_validator = array_pop($form['#validate']);
+      $form['#validate'][] = 'rpf_convert_login_validate';
+      $form['#validate'][] = $final_validator;
+    }
+    else {
+      //found it, now to do the swap
+      $form['#validate'][$array_key] = 'rpf_convert_login_validate';
+    
+    }
+    
+    
+    
+ } 
+  
+}
+
+
+function rpf_convert_login_validate($form, &$form_state) {
+  
+  //dpm($form);
+  //dpm($form_state);
+
+  $username = $form_state['values']['name'];
+  $password = $form_state['values']['pass'];
+
+  if (trim($username) == "" || trim($password) == "") return false;
+  
+  $bool_success = false;
+  // Test drupal's user table to see if the user has supplied the
+  // correct password.
+  $result = db_result(db_query("SELECT name FROM {users} WHERE
+                              pass = '%s' ", md5($password)));
+  if ($result == $username) {
+    $bool_success = true;
+  }
+  
+  if (!$bool_success) {
+    // Okay, we were not in the users table.  Let's check the conversion table.
+
+    $old_password = sha1($username . $password);
+    $old_password2 = sha1(strtolower($username) . $password);
+    
+    $result1 = db_result(db_query("SELECT name FROM {rpf_convert_pass} WHERE
+                                old_pass = '%s' ", $old_password));
+
+    $result2 = db_result(db_query("SELECT name FROM {rpf_convert_pass} WHERE
+                                old_pass = '%s' ", $old_password2));
+    if ($result1 == $username || $result2 == $username) {
+      $bool_success = true;
+      
+      // Let's inform drupal about this user's password
+      db_query("UPDATE {users} SET pass = '%s'
+                WHERE name = '%s' ", md5($password), $username);
+      if (db_affected_rows() == 1) {
+        db_query("UPDATE {rpf_convert_pass} SET updated_drupal = 1
+                  WHERE name = '%s' ", $username);
+        watchdog('rpf_convert',"Updated drupal's users table for $username's new password.");    
+      }
+      
+      
+    }    
+  }
+    
+
+  if ($bool_success) {
+    user_external_login_register($username, "rpf_convert");
+    user_authenticate_finalize($form_state["values"]);
+  }
+  else {
+    form_error($form["name"], "Sorry, unrecognized user/password combination.  Please try again.");
+    watchdog('rpf_convert',"Authentication failed for $username");    
+  }
+   
+  
+}
+
+
+
+function rpf_convert_from_smf114() {
+  $rtn = "";
+  $a = $_REQUEST["a"];
+
+  $member_array = $_SESSION["member_array"];
+  
+  $rtn .= "  
+  member_array has " . count($member_array) . " entries.<br><br>
+  <div>" . l("Delete last attempt", "rpf_convert/from_smf114", array("query" => "a=proceed_del")) . "</div>
+  <br><br>
+  <div>" . l("Re-do users", "rpf_convert/from_smf114", array("query" => "a=proceed_users")) . "</div>  
+  <div>" . l("Do topics 0 - 500", "rpf_convert/from_smf114", array("query" => "a=proceed_topics&r=0")) . "</div>
+  <div>" . l("Do topics 500 - 1000", "rpf_convert/from_smf114", array("query" => "a=proceed_topics&r=500")) . "</div>
+  <div>" . l("Do topics 1000 - 1500", "rpf_convert/from_smf114", array("query" => "a=proceed_topics&r=1000")) . "</div>
+  
+  ";
+  
+  
+  if (!strstr($a, "proceed")) {
+    
+    return $rtn;
+  }
+  
+  
+  /**
+   * //////////////////////////////////////////////
+   * ENTER YOUR CUSTOM INFORMATION HERE!
+   * //////////////////////////////////////////////
+   */
+  //die("You must comment out a die statement to proceed!  The code is in rpforum.admin.inc, in the function rpforum_convert_from_smf114()");
+  $db_name = "SMF_DB_NAME";
+  $tbl_pre = "smf_"; 
+  
+  // This is in the form of $ba[OLD_BOARD_ID] = NEW_TERM_ID
+  $board_array = array();
+  $board_array[1] = 13;  // blog comments
+  $board_array[3] = 18;  // podcast
+  $board_array[11] = 15;  // science questions
+  $board_array[4] = 19;  // general chat
+  
+  $tax_vid = 7;  // vid of the taxonomy being used.
+  
+  /////////////////////////////////////////////////
+  /////////////////////////////////////////////////  
+  
+  
+  
+  $admin_name = "admin";  // the name of admin on drupal
+  
+  $avatar_directory = file_directory_path() . "/" . variable_get("rpforum_avatar_upload_directory", "rpforum_avatars");
+  
+  $r = $_REQUEST["r"];
+  
+  if ($a == "proceed_del") {
+    // we want to clear out any attempts from the last time
+    // we ran this.  We do this by looking for users with an access time of "999".
+    $_SESSION["member_array"] = array();
+    
+    $res = db_query("SELECT uid FROM {users} WHERE access = 999");
+    while ($cur = db_fetch_array($res)) {
+      $uid = $cur["uid"];
+      $name = $cur["name"];
+      
+      db_query("DELETE FROM {rpforum_user_profiles} WHERE uid = %d", $uid);
+      db_query("DELETE FROM {rpf_convert_pass} WHERE name = '%s' ", $name);
+      
+    }
+    db_query("DELETE FROM {users} WHERE access = 999");
+    db_query("TRUNCATE TABLE {rpf_blogger_lookup} ");
+    
+    // Delete the posts.
+    $res = db_query("SELECT nid FROM {content_type_rp_forum_post}
+                     WHERE field_body2_value LIKE '%%<!--FROM_CONVERSION-->%%' ");
+    while ($cur = db_fetch_array($res)) {
+      node_delete($cur["nid"]);
+      
+    }
+  
+  }
+    
+  
+  if ($a == "proceed_users") {
+  //////////////////////////////////////////////////////////
+  // Now, let's begin the conversion process.
+  $member_array = array();
+  
+    $res = db_query("SELECT * FROM $db_name.{$tbl_pre}members
+                    where memberName <> 'admin' ");
+    while ($cur = db_fetch_array($res)) {
+      //dpm($cur);
+      $id_member = $cur["ID_MEMBER"];
+      
+      $name = $cur["memberName"];
+      $old_pass = $cur["passwd"];
+      $created = $cur["dateRegistered"];
+      $mail = $cur["emailAddress"];
+      $signature = $cur["signature"];
+      $avatar_url = $cur["avatar"];
+      $email_enable = ($cur["hideEmail"] == "1") ? "0" : "1";
+      $real_name = $cur["realName"];
+      $login = $cur["lastLogin"];
+      $website = $cur["websiteUrl"];
+      
+      $new_password = md5($name . rand(1, 9999) . time());
+      
+      $user_profile = array(
+        "avatar_url" => $avatar_url,
+        "signature" => $signature,
+        "email_enable" => $email_enable,
+        "real_name" => $real_name,
+        "website" => $website,    
+      );
+      
+      // Does this user have an avatar file uploaded?  If so, it will
+      // be in the form of avatar_ID.png
+      if (file_exists($avatar_directory . "/avatar_$id_member.png")) {
+        $user_profile["avatar_image"] = array(
+          "original" => "avatar_$id_member.png",
+          "thumb" => "avatar_$id_member.png",
+        );
+      }
+      
+      
+      // Okay, let's insert this fun stuff into our tables!
+      
+      // Insert into users table
+      db_query("INSERT INTO {users}
+                (name, pass, mail, created, access, login, status)
+                VALUES ('%s', '%s', '%s', %d, %d, %d, 1)
+                ", $name, $new_password, $mail, $created, 999, $login);
+      
+      // Get the new uid created.
+      $uid = db_result(db_query("SELECT uid FROM {users} WHERE name = '%s' ", $name));
+                
+      $member_array[$id_member] = array(
+        "uid" => $uid,
+        "name" => $name,
+       );
+  
+      //Insert into the user profile table
+      db_query("INSERT INTO {rpforum_user_profiles}
+                (uid, profile_data) VALUES (%d, '%s')
+                ", $uid, serialize($user_profile));
+      
+      // Insert into the convert pass table
+      db_query("INSERT INTO {rpf_convert_pass} (name, old_pass)
+                VALUES ('%s', '%s')
+                ", $name, $old_pass);
+    }
+
+    $_SESSION["member_array"] = $member_array;
+    
+  }
+  
+  
+  
+  if ($a == "proceed_topics") {
+    
+    // Okay, now let's bring the posts over.
+    $res = db_query("SELECT * FROM $db_name.{$tbl_pre}topics 
+                     LIMIT $r, 500 ");
+    while ($cur = db_fetch_array($res)) {
+      $id_first_message = $cur["ID_FIRST_MSG"];
+      $id_topic = $cur["ID_TOPIC"];
+      
+      // First, grab that first message.
+      $topic_nid = -1;
+      $res2 = db_query("SELECT * FROM $db_name.{$tbl_pre}messages
+                        WHERE ID_TOPIC = $id_topic  
+                        ORDER BY ID_MSG ASC ");
+      while ($cur2 = db_fetch_array($res2)) {
+        // Okay, let's create a new rpforum_post out of this message's details.
+        $new_node = array();
+        $new_node["title"] = html_entity_decode($cur2["subject"], ENT_QUOTES);
+        $new_node["type"] = "rp_forum_post";
+        $new_node["uid"] = $member_array[$cur2["ID_MEMBER"]]["uid"];
+        $new_node["name"] = $member_array[$cur2["ID_MEMBER"]]["name"];
+        if ($cur2["posterName"] == "admin") {
+          //dpm("here admin");
+          $new_node["uid"] = "1";
+          $new_node["name"] = $admin_name;
+        }
+        if ($cur2["ID_MEMBER"] == "0") {
+          $new_node["uid"] = "0";
+          $new_node["name"] = ""; 
+          $new_node["field_anon_name"][0]["value"] = $cur2["posterName"];
+        }
+        
+        $body = utf8_encode(html_entity_decode($cur2["body"], ENT_QUOTES)) . " <!--FROM_CONVERSION--> ";
+        $body = str_ireplace("<br />", "\n", $body);
+        $body = str_ireplace("<br/>", "\n", $body);
+        $body = str_ireplace("<br>", "\n", $body);
+        
+        $new_node["field_body2"][0]["value"] = $body;
+        $new_node["field_body2"][0]["format"] = "1";
+        $new_node["field_parent_node"][0]["value"] = $topic_nid;
+        $new_node["created"] = $cur2["posterTime"];
+        $new_node["taxonomy"][$tax_vid] = $board_array[$cur2["ID_BOARD"]];
+        $new_node["field_message_icon"][0]["value"] = "Standard"; 
+        
+        // Do we set "promote" or not?  Depends on the IP, if it's 127.0.0.0
+        
+        if ($cur2["posterIP"] == "127.0.0.0") {
+          $new_node["promote"] = "0";
+          
+        }
+        else {
+          $new_node["promote"] = "1";
+        }
+        
+              
+        
+        // Now, try to save it.
+        if ($node = node_submit($new_node)) {
+          $node->noredirect = true;
+          $node->no_resave_topic_node = true;
+          $node->created = $new_node["created"];
+          node_save($node);
+          //dpm($node);
+          // We now need to update that node in the node table
+          // and change the created and changed fields to be correct.
+          db_query("UPDATE {node}
+                    SET created = %d, 
+                        changed = %d
+                    WHERE nid = %d", $new_node["created"], $new_node["created"], $node->nid);
+          
+          if ($topic_nid == -1) {
+            
+            /*
+              This section I did for myself, and it is not needed by the average user.
+              
+            // Now, do the as_posts to blogger_lookup thing.
+            $res3 = db_query("SELECT * FROM $db_name.as_posts
+                        WHERE ID_TOPIC = $id_topic
+                        LIMIT 1");
+            $cur3 = db_fetch_array($res3);
+            if ($cur3["id"] != "") {
+              // We need to insert into our blogger_lookup table!
+              db_query("INSERT INTO {rpf_blogger_lookup} (id, title, ip, topic_nid, url, datetime, ref)
+                        VALUES ('%s', '%s', '%s', %d, '%s', '%s', '%s')
+                        ", $cur3["id"], $node->title, $cur3["ip"], $node->nid, $cur3["url"], $cur3["datetime"], $cur3["ref"]);
+            }
+            */
+            
+            
+            // This is the first one, so its the topic.  All others
+            // should be setting it as their parent_node value.
+            $topic_nid = $node->nid;
+          }
+        }
+        else {
+          drupal_set_message("Could not save message as node for ID_MSG: " . $cur2["ID_MSG"]);
+          continue;
+        }
+        
+        
+        
+        
+        
+        
+      }
+      
+      
+    }
+  
+  }
+  
+  
+  return $rtn;
+}
+
+
+
+?>

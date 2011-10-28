@@ -1,0 +1,51 @@
+<?php
+
+function rpf_convert_install() {
+  drupal_install_schema('rpf_convert');
+
+  // Make sure our weight is higher than others.
+  db_query("UPDATE {system} SET weight = 20 WHERE name = 'rpf_convert'");
+
+}
+
+function rpf_convert_uninstall() {
+  drupal_uninstall_schema('rpf_convert');
+}
+
+
+function rpf_convert_schema() {
+  $schema = array();
+  
+  $schema['rpf_convert_pass'] = array(
+  'description' => t('TODO: please describe this table!'),
+  'fields' => array(
+    'xid' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'serial',
+      'not null' => TRUE,
+    ),
+    'name' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'varchar',
+      'length' => '60',
+      'not null' => TRUE,
+    ),
+    'old_pass' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => TRUE,
+    ),
+    'updated_drupal' => array(
+      'description' => t('TODO: please describe this field!'),
+      'type' => 'int',
+      'size' => 'tiny',
+      'not null' => TRUE,
+    ),
+  ),
+  'primary key' => array('xid'),
+);
+
+
+  return $schema;
+}
