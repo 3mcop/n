@@ -129,7 +129,7 @@ div#site-name {
   float: left;
   width: 97%;
   margin-left: 0;
-  margin-right: -97%; /* Negative value of #content's width + left margin. */
+  /* margin-right: -97%; */ /* Negative value of #content's width + left margin. */
   padding: 0; /* DO NOT CHANGE. Add padding or margin to #content-inner. */
 }
 .two-sidebars #content-inner {
@@ -231,3 +231,25 @@ padding: 80px 0 20px 0; }
 .clearfix        { display: block; }
 /* Regular clearing */
 .clear { clear:both; }
+
+
+/*-------------------------------------------------------------------*/
+/*                             rpforum                               */
+/*-------------------------------------------------------------------*/
+
+table.container-forums th.rp-th-name {
+    font-weight: bold;
+    padding-left: 30px;
+}
+table.container-forums tr.forum-row td {
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+.rpforum-moderation-controls {
+    width: 200px;
+}
+
+.not-logged-in .rpforum-new-topic-link {
+    display:none;
+}
+
