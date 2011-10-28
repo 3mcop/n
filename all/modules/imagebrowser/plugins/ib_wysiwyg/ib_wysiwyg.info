@@ -1,0 +1,14 @@
+; $Id: ib_wysiwyg.info,v 1.1.2.1 2009/10/24 17:04:41 starnox Exp $
+name = Image Browser Plugin - WYSIWYG API
+description = Enable the use of WYSIWYG API with Image Browser.
+core = 6.x
+package = "Media"
+dependencies[] = imagebrowser
+dependencies[] = jquery_ui
+dependencies[] = wysiwyg
+; Information added by drupal.org packaging script on 2010-07-11
+version = "6.x-2.x-dev"
+core = "6.x"
+project = "imagebrowser"
+datestamp = "1278834536"
+

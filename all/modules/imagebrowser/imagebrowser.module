@@ -1,0 +1,1267 @@
+<?php
+// $Id: imagebrowser.module,v 1.4.2.8 2010/03/11 10:26:40 blixxxa Exp $
+
+/**
+ * @file
+ * Image Browser main module file.
+ */
+
+
+/** ========================================
+ * GENERAL FUNCTIONS
+ */
+
+
+/**
+ * Some useful help.
+ */
+function imagebrowser_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case "admin/help#imagebrowser":
+      $output = '<p>'. t("A simple, yet beautiful, image browser for Drupal.") .'</p>';
+      break;
+  }
+  return $output;
+}
+
+/**
+ * Permissions.
+ */
+function imagebrowser_perm() {
+  $perms = array('browse all images', 'browse own images', 'upload images', 'delete any image', 'delete own images', 'administer imagebrowser', 'view images');
+  
+  //Add ImageCache Presets
+  if (module_exists('imagecache')) {
+    foreach (imagecache_presets() as $preset) {
+      $perms[] = 'insert ImageCache preset: '. $preset['presetname'];
+    }
+  }
+  
+  return $perms;
+}
+
+/**
+ * Menu structure.
+ */
+function imagebrowser_menu() {
+  $items = array();
+  
+  // Main browser window
+  $items['imagebrowser/%'] = array(
+    'title' => 'Image Browser',
+    'page callback' => 'imagebrowser_browser',
+    'page arguments' => array(1),
+    'access callback' => 'imagebrowser_access_callback',
+    'access arguments' => array('browse all images', 'browse own images'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  // Insert window (AHAH)
+  $items['imagebrowser/%/insert/%'] = array(
+    'title' => 'Insert',
+    'page callback' => 'imagebrowser_insert',
+    'page arguments' => array(1, 3),
+    'access callback' => 'imagebrowser_access_callback',
+    'access arguments' => array('browse all images', 'browse own images'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  // Delete function
+  $items['imagebrowser/%/delete/%'] = array(
+    'title' => 'Delete',
+    'page callback' => 'imagebrowser_delete',
+    'page arguments' => array(1, 3),
+    'access callback' => 'imagebrowser_access_callback',
+    'access arguments' => array('delete any image', 'delete own images'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  // Request image details (AJAX - JSON)
+  $items['imagebrowser/ajax'] = array(
+    'title' => 'Ajax call',
+    'page callback' => 'imagebrowser_ajax',
+    'access callback' => 'imagebrowser_access_callback',
+    'access arguments' => array('browse all images', 'browse own images'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  // Admin [Defaults]
+  $items['admin/settings/imagebrowser'] = array(
+    'title' => 'Image Browser',
+    'page callback' => 'imagebrowser_defaults_list',
+    'access arguments' => array('administer imagebrowser'),
+  );
+  $items['admin/settings/imagebrowser/defaults'] = array(
+    'title' => 'Assign Role Defaults',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+  $items['admin/settings/imagebrowser/defaults/%'] = array(
+    'title callback' => 'imagebrowser_title_callback',
+    'title arguments' => array('Edit "!role" defaults', 4),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('imagebrowser_defaults_edit_form', 4),
+    'access arguments' => array('administer imagebrowser'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  // Admin [Styles]
+  $items['admin/settings/imagebrowser/styles'] = array(
+    'title' => 'Styles',
+    'page callback' => 'imagebrowser_styles_list',
+    'page arguments' => array('imagebrowser_styles_list'),
+    'access arguments' => array('administer imagebrowser'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['admin/settings/imagebrowser/add-new-style'] = array(
+    'title' => 'Add new style',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('imagebrowser_style_add'),
+    'access arguments' => array('administer imagebrowser'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
+  );
+  $items['admin/settings/imagebrowser/style/%'] = array(
+    'title callback' => 'imagebrowser_title_callback',
+    'title arguments' => array('Edit style: !name', 4),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('imagebrowser_style_edit', 4),
+    'access arguments' => array('administer imagebrowser'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/settings/imagebrowser/style/%/delete'] = array(
+    'title callback' => 'imagebrowser_title_callback',
+    'title arguments' => array('Delete style: !name', 4),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('imagebrowser_style_delete', 4),
+    'access arguments' => array('administer imagebrowser'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  // Admin [Views]
+  $items['admin/settings/imagebrowser/views'] = array(
+    'title' => t('Views'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('imagebrowser_system_settings_views'),
+    'access arguments' => array('administer imagebrowser'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 11
+  );
+  
+  // == Keep for IBv1
+  
+  // View 'ImageCache' file
+  $items['imagebrowser/view/imagecache'] = array(
+    'title' => 'View ImageCache File',
+    'page callback' => 'imagebrowser_view_imagecache',
+    'access arguments' => array('view images'),
+    'type' => MENU_CALLBACK,
+  );
+  // View 'Image' file
+  $items['imagebrowser/view/image'] = array(
+    'title' => 'View Image File',
+    'page callback' => 'imagebrowser_view_image',
+    'access arguments' => array('view images'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  return $items;
+}
+
+/**
+ * Replace title tokens.
+ */
+function imagebrowser_title_callback($title, $rid = null) {
+  $replacements = array();
+  $role = user_roles();
+  $style = imagebrowser_styles($rid);
+  if($rid != null) {
+    $replacements['!role'] = $role[$rid];
+    $replacements['!name'] = $style['name'];
+  }
+  return t($title, $replacements);
+}
+
+/**
+ * Access callback.
+ */
+function imagebrowser_access_callback() {
+  $args = func_get_args();
+  foreach($args as $permission) {
+    if(user_access($permission)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Load correct javascript and css files where needed.
+ */
+function imagebrowser_init() {
+  $settings = array(
+    'basepath' => base_path(),
+    'filepath' => file_directory_path(),
+    'modulepath' => drupal_get_path('module', 'imagebrowser'),
+  );
+
+  drupal_add_js(array('imagebrowser' => $settings), "setting");
+
+  if(!file_exists(file_directory_path() . "/ibstyles.css")) {
+    imagebrowser_rebuild_cache();
+  }
+
+  drupal_add_css(file_directory_path() . "/ibstyles.css");
+}
+
+
+/** ========================================
+ * UPLOAD FUNCTIONS
+ */
+
+/**
+ * Creates an upload form via FormAPI.
+ */
+function imagebrowser_upload() {
+  $form['#attributes'] = array('enctype' => 'multipart/form-data');
+  
+  $form['upload'] = array(
+    '#type' => 'file',
+    '#title' => t('Quick Upload'),
+    '#size' => 30,
+    '#attributes' => array('onchange' => 'javascript:ib_upload()'),
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Upload'),
+    '#id' => 'image_upload',
+  );
+  
+  $form['#validate'][]  = 'imagebrowser_upload_validate';
+  $form['#submit'][]    = 'imagebrowser_upload_submit';
+  return $form;
+}
+
+/**
+ * Validation for the upload form.
+ */
+function imagebrowser_upload_validate($form_id, &$form_values) {
+  // @todo validate mimetypes
+}
+
+/**
+ * Make the upload permanent.
+ */
+function imagebrowser_upload_submit($form_id, $form_values) {
+  // If image module is present, we store the image file as an image node.
+  if (module_exists('image')) {
+    $file = file_save_upload('upload'); //Save temp file
+    $node = image_create_node_from($file->filepath, NULL, '', NULL); //Create Image node
+    $node = node_load($node->nid); // We need to reload the node for some reason (bug with image_create_node_from?).
+    $fail = ($node == FALSE);
+    if (!$fail) {
+      image_update($node); // Update the derivatives.
+    }
+  }
+  // If no image module present, the image is stored as a permanent file.
+  else {
+    // Make file permanent and move to images direction
+    $file = file_save_upload('upload', array(), file_directory_path().'/images'); // Save temp file.
+    file_set_status($file, FILE_STATUS_PERMANENT);
+    $fail = (!$file); 
+  }
+
+  // Return a message  
+  if ($fail) {
+    drupal_set_message(t('Image failed to upload. Please try again.'), 'error');
+  }
+  else {
+    drupal_set_message(t('New image uploaded successfully.'));
+  }
+  
+  $form_state['redirect'] = 'imagebrowser';
+}
+
+
+/** ========================================
+ * BROWSE FUNCTIONS
+ */
+
+
+/**
+ * The image browser powered by Views.
+ */
+function imagebrowser_browser($program) {
+  $plugins = imagebrowser_plugins();
+  if(isset($plugins[$program])) {
+    drupal_add_js($plugins[$program]['url']);
+  }
+  else{
+    drupal_set_message(t('Required plugin "'. $program .'" not found.'));
+    print theme('status_messages');
+    exit();
+  }
+  
+  //Set CSS
+  drupal_add_css(drupal_get_path('module', 'imagebrowser') .'/theme/imagebrowser.css');
+  
+  $css = drupal_get_css();
+  
+  //Get upload form
+  if (user_access('upload images')) {
+    $upload = drupal_get_form('imagebrowser_upload');
+  }
+  else {
+    $upload = NULL;
+  }
+  
+  //Set javascript
+  drupal_add_js(drupal_get_path('module', 'views') .'/js/base.js');
+  drupal_add_js(drupal_get_path('module', 'views') .'/js/ajax_view.js');
+  drupal_add_js(drupal_get_path('module', 'imagebrowser') .'/js/imagebrowser.js');
+  
+  //Get view javascript settings
+  $args = array();
+
+  $view = views_get_view(variable_get('imagebrowser_view','ib_browser'));
+  $view->set_display('default');
+  $settings = array(
+    'views' => array(
+      'ajax_path' => url('views/ajax'),
+      'ajaxViews' => array(
+        array(
+          'view_name' => $view->name,
+          'view_display_id' => $view->current_display,
+          'view_path' => $_GET['q'],
+          'view_dom_id' => 1,
+          'pager_element' => $view->pager['element'],
+        ),
+      ),
+    ),
+  );
+  drupal_add_js($settings, 'setting');
+
+  $javascript = drupal_get_js();
+  
+  $browser = $view->execute_display('default');
+
+  $messages = theme('status_messages');
+
+  //Theme the bad boy
+  print theme('imagebrowser_browser',
+    $css,
+    $messages,
+    $upload,
+    $browser,
+    $javascript
+  );
+  exit();
+}
+
+/**
+ * Implementation of hook_views_api().
+ */
+function imagebrowser_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'imagebrowser') .'/includes',
+  );
+}
+
+
+/** ========================================
+ * INSERT FUNCTIONS
+ */
+
+/**
+ * Implementation of FormAPI.
+ */
+function imagebrowser_options_form($form_state, $fid) {
+  global $user;
+  $role = array_slice($user->roles, 0, 1, TRUE);
+  $rid = key($role);
+  
+  // ImageCache presets
+  $presets = array();
+  foreach (imagecache_presets() as $preset) {
+    //Check permissions
+    if (user_access('view imagecache '. $preset['presetname']) && user_access('insert ImageCache preset: '. $preset['presetname'])) {
+      $presets[$preset['presetname']] = $preset['presetname'];
+    }
+  }
+  
+  // Links
+  $links = array('none' => t("Don't Link"));
+  foreach($presets as $id => $preset) {
+    $links[$id] = t('ImageCache') .': '. $preset;
+  }
+  
+  // Add "Link to node" option if image has corresponding node.
+  if(module_exists('image')) {
+    $result = db_query("SELECT nid FROM {image} INNER JOIN {node} USING (nid)  WHERE type='image' and fid = %d", $fid);
+    $nid = db_result($result);
+    if ($nid) {
+      $links['node'] = t('Link to node');
+    }
+  }
+  
+  $links['custom_url'] = t('Custom URL');
+  
+  // Link Targets
+  $link_targets = array(
+    'self' => 'Self',
+    'blank' => 'Blank',
+    'parent' => 'Parent',
+    'top' => 'Top'
+  );
+  
+  // Styles
+  $styles_raw = imagebrowser_styles();
+  $styles = array();
+  foreach($styles_raw as $style) {
+    $styles['ibimage_'.$style['name']] = t($style['name']);
+  }
+
+  $form = array();
+
+  $form['fid'] = array(
+    '#id' => 'fid',
+    '#type' => 'hidden',
+    '#value' => $fid,
+  );
+  
+  $form['image_preset'] = array(
+    '#id' => 'image_preset',
+    '#type' => 'select',
+    '#title' => t('ImageCache Preset'),
+    '#default_value' => variable_get('imagebrowser_image_preset_default_'. $rid, NULL),
+    '#options' => $presets,
+    '#description' => t('Select a default image preset.'),
+    '#weight' => 0,
+  );
+  
+  $form['link'] = array(
+    '#id' => 'link',
+    '#type' => 'select',
+    '#title' => t('Link'),
+    '#default_value' => variable_get('imagebrowser_link_default_'. $rid, NULL),
+    '#options' => $links,
+    '#description' => t('Select a default link for the image.'),
+    '#weight' => 1,
+  );
+  
+  $form['custom_url'] = array(
+    '#id' => 'custom_url',
+    '#type' => 'textfield',
+    '#size' => '30',
+    '#title' => t('Custom URL'),
+    '#default_value' => variable_get('imagebrowser_custom_url_default_'. $rid, 'http://'),
+    '#description' => t("Only fill this in if you have selected 'Custom URL' as the 'link to' option above."),
+    '#weight' => 2,
+  );
+  
+  $form['link_target'] = array(
+    '#id' => 'link_target',
+    '#type' => 'select',
+    '#title' => t('Link Target'),
+    '#default_value' => variable_get('imagebrowser_link_target_default_'. $rid, NULL),
+    '#options' => $link_targets,
+    '#description' => t('Select a target for the link.'),
+    '#weight' => 3,
+  );
+  
+  $form['styles'] = array(
+    '#id' => 'styles',
+    '#type' => 'select',
+    '#title' => t('Styles'),
+    '#default_value' => variable_get('imagebrowser_styles_default_'. $rid, NULL),
+    '#options' => $styles,
+    '#multiple' => true,
+    '#description' => t('Select a default image alignment.'),
+    '#weight' => 4,
+  );
+  
+  return $form;
+}
+
+/**
+ * Returns image details and insert options for requested file.
+ */
+function imagebrowser_insert($program, $fid = 0) {
+  $query = db_query("SELECT filepath, uid FROM {files} WHERE fid = %d", $fid);
+  $result = db_fetch_array($query);
+  
+  $image = imageapi_image_open($result['filepath']);
+  $user = user_load($result['uid']);
+  
+  $image_width = $image->info['width'];
+  $image_height = $image->info['height'];
+  $image_mime_type = $image->info['mime_type'];
+  $image_size = format_size($image->info['file_size']);
+  $image_owner = check_plain($user->name);
+  
+  $image = theme('imagecache', 'ib_thumbnail', $result['filepath'], 'IB Image', $result['filepath']);
+  
+  $form = drupal_get_form('imagebrowser_options_form', $fid);
+
+  if (user_access('delete any image') || (user_access('delete own images') && $user->uid == $result['uid'])) {
+    $delete = '<a href="#" class="button delete">'.t('Delete').'</a><div id="delete-confirm"><span>'. t('Are you sure?') .' </span><a href="'.url('imagebrowser/'. arg(1) .'/delete/'. $fid).'" class="button confirm">'.t('Yes, delete').'</a><a href="#" class="button cancel">'.t('Cancel').'</a></div>';
+  }
+  
+  //Theme it!
+  print theme('imagebrowser_insert',
+   $form,
+   $image,
+   $image_width,
+   $image_height,
+   $image_mime_type,
+   $image_size,
+   $image_owner,
+   $delete
+  );
+  exit();
+}
+
+/**
+ * Deletes a file.
+ */
+function imagebrowser_delete($program, $fid = 0) {
+  global $user;
+  $uid = db_result(db_query("SELECT uid FROM {files} WHERE fid = %d", $fid));
+  if (user_access("delete any image") || (user_access("delete own images") && $uid == $user->uid)) {
+    $query = db_query("SELECT filepath FROM {files} WHERE fid = %d", $fid);
+    $filepath = db_result($query);
+    unlink($filepath);
+    $query = db_query("DELETE FROM {files} WHERE fid = %d", $fid);
+    drupal_set_message(t('Image deleted successfully.'));
+    header("Location: ". base_path() ."imagebrowser/". $program);
+    exit();
+  }
+}
+
+
+/** ========================================
+ * TAG FUNCTIONS
+ */
+
+/**
+ * Implements hook_filter().
+ */
+function imagebrowser_filter($op, $delta = 0, $format = -1, $text = '') {
+  if ($op == 'list') {
+    return array(
+      0 => t('Image Browser Images'),
+    );
+  }
+
+  switch ($delta) {
+    case 0:
+      switch ($op) {
+        case 'description':
+          return t('Replaces Image Browser Image tags with real images.');
+
+        case 'no cache':
+          return FALSE;
+
+        case 'prepare':
+          return $text;
+
+        case 'process':
+          $processed = FALSE;
+          foreach (imagebrowser_get_tags($text) as $unexpanded_macro => $macro) {
+            $expanded_macro = imagebrowser_render_tag($macro);
+            $text           = str_replace($unexpanded_macro, $expanded_macro, $text);
+          }
+          return $text;
+      }
+      break;
+  }
+}
+
+/**
+ * Find tags.
+ */
+function imagebrowser_get_tags($text) {
+  $m = array();
+  preg_match_all('/ \[ ( [^\[\]]+ )* \] /x', $text, $matches);
+  // Don't process duplicates.
+  $tag_match = (array) array_unique($matches[1]);
+  
+  foreach ($tag_match as $macro) {
+    $current_macro = '['. $macro .']';
+    $param = array_map('trim', explode('==', $macro));
+    // The first macro param is assumed to be the function name.
+    $func_name = array_shift($param);
+    if ($func_name == 'ibimage') {
+      // The full unaltered filter string is the key for the array of filter attributes.
+      $m[$current_macro] = implode('==', $param);
+    }
+  }
+  
+  return $m;
+}
+
+/**
+ * Returned an image rendered from a tag
+ */
+function imagebrowser_render_tag($rawtag) {
+  // Get attributes
+  $attr = imagebrowser_decode_tag($rawtag);
+  
+  // Create Image
+  $image = theme('imagecache', $attr['preset'], $attr['filepath'], 'File' .' '. $attr['fid'], NULL, array('class'=>'ibimage '.$attr['styles']));
+  
+  return theme_ibimage($image, $attr['link_url'], $attr['link_target']);
+}
+
+/**
+ * Decode a tag.
+ */
+function imagebrowser_decode_tag($rawtag) {
+  $tag = array();
+  
+  // {FID}=={PRESET_NAME}=={LINK_PRESET_NAME/URL}=={LINK_TARGET}=={STYLES}
+  $attr = array_map('trim', explode('==', $rawtag));
+  
+  $tag['fid'] = $attr[0];
+  $tag['preset'] = $attr[1];
+  $tag['link_preset'] = $attr[2];
+  $tag['link_target'] = $attr[3];
+  $tag['styles'] = $attr[4];
+  
+  $tag['styles'] = str_replace(',', ' ', $tag['styles']);
+  
+  // Get image URL  
+  $result = db_query("SELECT filepath FROM {files} WHERE fid = %d", $tag['fid']);
+  $tag['filepath'] = db_result($result);
+  
+  if ($tag['filepath'] == FALSE) {
+    $tag['image_url'] = NULL;
+  }
+  else {
+    $tag['image_url'] = imagecache_create_url($tag['preset'], $tag['filepath'], FALSE);
+  }
+  
+  // Get link URL
+  if ($tag['link_preset'] == '' || $tag['link_preset'] == 'none') {
+    $tag['link_url'] = NULL;
+  }
+  else if ($tag['link_preset'] == 'node') {
+    // Search a corresponding image node
+    $result = db_query("SELECT nid FROM {image} INNER JOIN {node} USING (nid)  WHERE type='image' and fid = %d", $tag['fid']);
+    $nid = db_result($result);
+    if ($nid == FALSE) {
+      $tag['link_url'] = NULL;
+    }
+    else {
+      $tag['link_url'] = url("node/$nid");
+    }
+  }
+  else if (substr($tag['link_preset'], 0, 4) == 'http') {
+    $tag['link_url'] = $tag['link_preset']; 
+  }
+  else {
+    $tag['link_url'] = imagecache_create_url($tag['link_preset'], $tag['filepath'], FALSE);
+  }
+  
+  return $tag;
+}
+
+
+/** ========================================
+ * THEME FUNCTIONS
+ */
+
+
+/**
+ * Sets theme preprocessor functions for Image Browser.
+ */
+function imagebrowser_theme() {
+  $path = drupal_get_path('module', 'imagebrowser') .'/theme';
+  return array(
+    'imagebrowser_browser' => array(
+      'template' => 'browser',
+      'arguments' => array(
+        'css' => NULL,
+        'messages' => NULL,
+        'upload' => NULL,
+        'browser' => NULL,
+        'javascript' => NULL,
+      ),
+      'path' => $path,
+    ),
+    'imagebrowser_insert' => array(
+      'template' => 'insert',
+      'arguments' => array(
+        'form' => NULL,
+        'image' => NULL,
+        'image_width' => NULL,
+        'image_height' => NULL,
+        'image_mime_type' => NULL,
+        'image_size' => NULL,
+        'image_owner' => NULL,
+        'delete' => NULL,
+      ),
+      'path' => $path,
+    ),
+    'ibimage' => array(
+      'arguments' => array(
+        'imageurl' => NULL,
+        'linkurl' => NULL,
+        'classes' => NULL,
+      ),
+    ),
+  );
+}
+
+/**
+ * Theme an IB image.
+ */
+function theme_ibimage($image, $link, $link_target) {
+  if($link != NULL) {
+    return '<a href="'.$link.'" target="_'. $link_target .'">'. $image .'</a>';
+  }
+  else {
+    return $image;
+  }
+}
+
+
+/** ========================================
+ * PLUGINS
+ */
+
+
+/**
+ * Invoke a hook_imagebrowserapi() operation in all modules.
+ *
+ * @param $op
+ *   A string containing the name of the imagebrowserapi operation.
+ *    'load' is called when an element is loaded
+ *
+ * @return
+ *   The returned value of the invoked hooks.
+ */
+function imagebrowser_invoke_imagebrowserapi($op) {
+  $results = array();
+  foreach (module_implements('imagebrowserapi') as $name) {
+    $function = $name .'_imagebrowserapi';
+    $result = $function($op);
+    $results[$name] = $result;
+  }
+  return $results;
+}
+
+/**
+ * Return array of elements.
+ */
+function imagebrowser_plugins() {
+  return imagebrowser_invoke_imagebrowserapi('load');
+}
+
+/**
+ * Return JSON of image properties from supplied tag.
+ */
+function imagebrowser_ajax() {
+  if (empty($_GET['tag'])) {
+    exit;
+  }
+
+  if (!preg_match("/^\[ibimage\s*([^\]]*?)\]$/", $_GET['tag'])) {
+    exit;
+  }
+  
+  $rawtag = substr($_GET['tag'], 10, strlen($_GET['tag'])-11);
+  
+  $attr = imagebrowser_decode_tag($rawtag);
+
+  print json_encode($attr);
+  exit;
+}
+
+/**
+ * Substitute for json_encode function for PHP version < 5.2.
+ */
+if (!function_exists('json_encode')) {
+  function json_encode($a=false) {
+    if (is_null($a)) return 'null';
+    if ($a === false) return 'false';
+    if ($a === true) return 'true';
+    if (is_scalar($a)) {
+      if (is_float($a)) {
+        // Always use "." for floats.
+        return floatval(str_replace(",", ".", strval($a)));
+      }
+
+      if (is_string($a)) {
+        static $jsonReplaces = array(array("\\", "/", "\n", "\t", "\r", "\b", "\f", '"'), array('\\\\', '\\/', '\\n', '\\t', '\\r', '\\b', '\\f', '\"'));
+        return '"' . str_replace($jsonReplaces[0], $jsonReplaces[1], $a) . '"';
+      }
+      else
+        return $a;
+    }
+    $isList = true;
+    for ($i = 0, reset($a); $i < count($a); $i++, next($a)) {
+      if (key($a) !== $i) {
+        $isList = false;
+        break;
+      }
+    }
+    $result = array();
+    if ($isList) {
+      foreach ($a as $v) $result[] = json_encode($v);
+      return '[' . join(',', $result) . ']';
+    }
+    else {
+      foreach ($a as $k => $v) $result[] = json_encode($k).':'.json_encode($v);
+      return '{' . join(',', $result) . '}';
+    }
+  }
+}
+
+/** ========================================
+ * ADMIN FUNCTIONS
+ */
+
+
+/**
+ * List of roles you can assign defaults to.
+ */
+function imagebrowser_defaults_list() {
+  $header = array(t('Role'), t('Actions'));
+  $rows = array();
+  foreach (user_roles() as $rid => $role) {
+    $row = array();
+    $row[] = l($role, 'admin/settings/imagebrowser/defaults/'. $rid);
+    $row[] = l(t('Edit Defaults'), 'admin/settings/imagebrowser/defaults/'. $rid);
+    $rows[] = $row;
+  }
+  $output = theme('table', $header, $rows);
+
+  return $output;
+}
+
+/**
+ * Defaults form.
+ */
+function imagebrowser_defaults_edit_form($form_state, $rid = null) {  
+  // ImageCache presets
+  $presets = array();
+  foreach (imagecache_presets() as $preset) {
+    $presets[$preset['presetname']] = $preset['presetname'];
+  }
+  
+  // Links
+  $links = array('none' => t("Don't Link"));
+  foreach($presets as $id => $preset) {
+    $links[$id] = t('ImageCache') .': '. $preset;
+  }
+  $links['custom_url'] = t('Custom URL');
+  
+  // Link Targets
+  $link_targets = array(
+    'self' => 'Self',
+    'blank' => 'Blank',
+    'parent' => 'Parent',
+    'top' => 'Top'
+  );
+  
+  // Styles
+  $styles_raw = imagebrowser_styles();
+  $styles = array();
+  foreach($styles_raw as $style) {
+    $styles['ibimage_'.$style['name']] = t($style['name']);
+  }
+
+  $form = array();
+  $form['image_preset'] = array(
+    '#id' => 'image_preset',
+    '#type' => 'select',
+    '#title' => t('ImageCache Preset'),
+    '#default_value' => variable_get('imagebrowser_image_preset_default_'. $rid, NULL),
+    '#options' => $presets,
+    '#weight' => 0,
+  );
+  
+  $form['link'] = array(
+    '#id' => 'link',
+    '#type' => 'select',
+    '#title' => t('Link'),
+    '#default_value' => variable_get('imagebrowser_link_default_'. $rid, NULL),
+    '#options' => $links,
+    '#weight' => 1,
+  );
+  
+  $form['custom_url'] = array(
+    '#id' => 'custom_url',
+    '#type' => 'textfield',
+    '#size' => '30',
+    '#title' => t('Custom URL'),
+    '#default_value' => variable_get('imagebrowser_custom_url_default_'. $rid, 'http://'),
+    '#description' => t("e.g. http://www.example.com"),
+    '#weight' => 2,
+  );
+  
+  $form['link_target'] = array(
+    '#id' => 'link_target',
+    '#type' => 'select',
+    '#title' => t('Link Target'),
+    '#default_value' => variable_get('imagebrowser_link_target_default_'. $rid, NULL),
+    '#options' => $link_targets,
+    '#weight' => 3,
+  );
+  
+  $form['styles'] = array(
+    '#id' => 'styles',
+    '#type' => 'select',
+    '#title' => t('Styles'),
+    '#default_value' => variable_get('imagebrowser_styles_default_'. $rid, NULL),
+    '#options' => $styles,
+    '#multiple' => true,
+    '#description' => t('CSS styles (multiple allowed).'),
+    '#weight' => 4,
+  );
+  $form['rid'] = array(
+    '#type' => 'hidden',
+    '#value' => $rid,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save defaults'),
+    '#weight' => 5,
+  );
+  return $form;
+}
+
+/**
+ * Save defaults submitted by form.
+ */
+function imagebrowser_defaults_edit_form_submit($form, &$form_state) {
+  $role = user_roles();
+
+  variable_set('imagebrowser_image_preset_default_'.$form_state['values']['rid'], $form_state['values']['image_preset']);
+  variable_set('imagebrowser_link_default_'.$form_state['values']['rid'], $form_state['values']['link']);
+  variable_set('imagebrowser_custom_url_default_'.$form_state['values']['rid'], $form_state['values']['custom_url']);
+  variable_set('imagebrowser_link_target_default_'.$form_state['values']['rid'], $form_state['values']['link_target']);
+  variable_set('imagebrowser_styles_default_'.$form_state['values']['rid'], $form_state['values']['styles']);
+
+  drupal_set_message(t('Defaults saved for %role.', array('%role' => $role[$form_state['values']['rid']])));
+  $form_state['redirect'] = 'admin/settings/imagebrowser/defaults';
+}
+
+/**
+ * Return array of styles.
+ */
+function imagebrowser_styles($sid = NULL) {
+  //If cache isn't set, set it.
+  if(cache_get('imagebrowser_styles') == '') {
+    imagebrowser_rebuild_cache();
+  }
+  
+  $styles = cache_get('imagebrowser_styles');
+  
+  if($sid != NULL && isset($styles->data[$sid])) {
+    return $styles->data[$sid];
+  }
+  else {
+    return $styles->data;
+  }
+  
+  return array();
+}
+
+/**
+ * Rebuild style cache.
+ */
+function imagebrowser_rebuild_cache() {
+  $styles = array();
+    $result = db_query('SELECT * FROM {imagebrowser_styles} ORDER BY name');
+    while ($style = db_fetch_array($result)) {
+      $styles[$style['sid']] = $style;
+    }
+
+  cache_set('imagebrowser_styles', $styles);
+  
+  $css = file_directory_path() . "/ibstyles.css";
+  $file = fopen($css, 'w') or die("can't open file");
+  $data = NULL;
+  foreach($styles as $style) {
+    $data .= '.ibimage_'. $style['name'] ." {\r\n". $style['css'] ."\r\n}\r\n\r\n";
+  }
+  fwrite($file, $data);
+  fclose($file);
+
+  drupal_set_message(t('Styles cache updated.'));  
+}
+
+/**
+ * Return formatted list of styles.
+ */
+function imagebrowser_styles_list() {
+  $header = array(t('Style'), t('Actions'));
+  $rows = array();
+  foreach (imagebrowser_styles() as $style) {
+    $row = array();
+    $row[] = l($style['name'], 'admin/settings/imagebrowser/style/'. $style['sid']);
+      $links = array();
+      $links[] = l(t('Edit'), 'admin/settings/imagebrowser/style/'. $style['sid']);
+      $links[] = l(t('Delete'), 'admin/settings/imagebrowser/style/'. $style['sid'] .'/delete');
+    $row[] = implode('&nbsp;&nbsp;&nbsp;&nbsp;', $links);
+    $rows[] = $row;
+  }
+  $output = theme('table', $header, $rows);
+  return $output;
+}
+
+/**
+ * Form to add a new style.
+ */
+function imagebrowser_style_add($form_state) {
+  if (user_access('administer imagebrowser')) {
+    $form['style'] = array(
+      '#type' => 'fieldset', 
+      '#title' => t('Style Details'), 
+      '#weight' => -2, 
+      '#collapsible' => FALSE, 
+      '#collapsed' => FALSE,
+    );
+    
+    $form['style']['name'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Name'),
+      '#default_value' => '',
+      '#required' => TRUE,
+      '#size' => '20',
+      '#description' => t('Unique name for a style. Please only use alphanumeric characters, underscores (_), and hyphens (-) for style names.'),
+    );
+
+    $form['style']['css'] = array(
+      '#type' => 'textarea',
+      '#title' => t('CSS'),
+      '#default_value' => '',
+      '#required' => TRUE,
+      '#size' => '60',
+      '#description' => t('The CSS properties of the style.'),
+    );
+
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Add new style'),
+    );
+
+    $form['#validate'][]  = 'imagebrowser_style_validate';
+    $form['#submit'][]    = 'imagebrowser_style_submit';
+
+    return $form;
+  }
+}
+
+/**
+ * Custom validation function for a new style.
+ */
+function imagebrowser_style_validate($form, &$form_state) {
+  $styles = imagebrowser_styles();
+  if(isset($form_state['values']['sid'])) {
+    unset($styles[$form_state['values']['sid']]);
+  }
+  foreach($styles as $sid => $style) {
+    if($style['name'] == $form_state['values']['name']) {
+      form_set_error('name', t('Style name has to be unique.'));
+    }
+  }
+
+  if (preg_match('/[^0-9a-zA-Z_-]/', $form_state['values']['name'])) {
+    form_set_error('name', t('Please only use alphanumeric characters, underscores (_), and hyphens (-) for style names.'));
+  }
+  if(strlen($form_state['values']['name']) > 20) {
+    form_set_error('name', t('Style name must be shorter than 20 characters.'));
+  }
+}
+
+/**
+ * Add a new style.
+ */
+function imagebrowser_style_submit($form, &$form_state) {
+  drupal_write_record('imagebrowser_styles', $form_state['values']);
+  drupal_set_message(t("New style %name added.", array('%name' => $form_state['values']['name'])));
+  imagebrowser_rebuild_cache();
+  $form_state['redirect'] = 'admin/settings/imagebrowser/styles';
+}
+
+/**
+ * Form to edit a style.
+ */
+function imagebrowser_style_edit($form_state, $sid = 0) {
+  if (user_access('administer imagebrowser')) {
+    $style = imagebrowser_styles($sid);
+
+    $form['style'] = array(
+      '#type' => 'fieldset', 
+      '#title' => t('Style Details'), 
+      '#weight' => -2, 
+      '#collapsible' => FALSE, 
+      '#collapsed' => FALSE,
+    );
+    
+    $form['style']['name'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Name'),
+      '#default_value' => $style['name'],
+      '#required' => TRUE,
+      '#size' => '20',
+      '#description' => t('Unique name for a style. Please only use alphanumeric characters, underscores (_), and hyphens (-) for style names.'),
+    );
+
+    $form['style']['css'] = array(
+      '#type' => 'textarea',
+      '#title' => t('CSS'),
+      '#default_value' => $style['css'],
+      '#required' => TRUE,
+      '#size' => '60',
+      '#description' => t('The CSS properties of the style.'),
+    );
+
+    $form['sid'] = array(
+      '#type' => 'hidden',
+      '#value' => $sid,
+    );
+
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Save changes to style'),
+    );
+
+    $form['#validate'][]  = 'imagebrowser_style_validate';
+    $form['#submit'][]    = 'imagebrowser_style_edit_submit';
+
+    return $form;
+  }
+}
+
+/**
+ * Save changed to a style.
+ */
+function imagebrowser_style_edit_submit($form, &$form_state) {
+  drupal_write_record('imagebrowser_styles', $form_state['values'], 'sid');
+  drupal_set_message(t("Style %name updated.", array('%name' => $form_state['values']['name'])));
+  imagebrowser_rebuild_cache();
+  $form_state['redirect'] = 'admin/settings/imagebrowser/styles';
+}
+
+/**
+ * Form to delete a style.
+ */
+function imagebrowser_style_delete($form_state, $sid = NULL) {
+  $style = imagebrowser_styles($sid);
+  if (empty($style)) {
+    drupal_set_message(t('The specified style was not found.'), 'error');
+    drupal_goto('admin/settings/imagebrowser/styles');
+  }
+
+  $form = array();
+  $form['sid'] = array('#type' => 'value', '#value' => $sid);
+  return confirm_form(
+    $form,
+    t('Are you sure you want to delete the style %name?',
+      array('%name' => $style['name'])
+    ),
+    'admin/settings/imagebrowser/styles',
+    t('This action cannot be undone.'),
+    t('Delete'),  t('Cancel')
+  );
+}
+
+/**
+ * Delete a style.
+ */
+function imagebrowser_style_delete_submit($form, &$form_state) {
+  $style = imagebrowser_styles($form_state['values']['sid']);
+  db_query('DELETE FROM {imagebrowser_styles} where sid = %d', $style['sid']);
+  drupal_set_message(t('Style %name was deleted.', array('%name' => $style['name'])));
+  imagebrowser_rebuild_cache();
+  $form_state['redirect'] = 'admin/settings/imagebrowser/styles';
+}
+
+/**
+ * Change the view to use.
+ */
+function imagebrowser_system_settings_views() {
+  $all_views = views_get_all_views();
+  foreach ($all_views as $view) {
+    $views[$view->name] = $view->name;
+  }
+        
+  $form['imagebrowser_view'] = array(
+    '#title' => t('View to use'),
+    '#type' => 'select',
+    '#options' => $views,
+    '#default_value' => array(variable_get('imagebrowser_view','ib_browser')),
+    '#description' => t('Select the view which will be used to fetch images. Default is ib_browser.')
+  );
+
+  return system_settings_form($form);
+}
+
+/** ========================================
+ * VIEW FUNCTIONS (Old, for IBv1 support)
+ */
+
+
+/**
+ * Fetches an 'Image' file, allows "shorthand" image urls such of the form:
+ * imagebrowser/view/image/$nid/$preset
+ * (e.g. imagebrowser/view/image/25/thumbnail)
+ */
+function imagebrowser_view_image($nid = 0, $size = NULL) {
+  if ($size == '_original' && !user_access('view original images') || !module_exists('image')) {
+    return drupal_access_denied();
+  }
+  
+  //Get permissions
+  $node = node_load(array('type' => 'image', 'nid' => $nid));
+  if ($node) {
+    if (!node_access('view', $node)) {
+      return drupal_access_denied();
+    }
+    
+    //Redirect to real file
+    $file = $node->images[$size];
+    header('Location: '.base_path().$file);
+  }
+}
+
+/**
+ * Fetches an 'ImageCache' file, allows "shorthand" image urls such of the form:
+ * imagebrowser/view/imagecache/$nid/$preset
+ * (e.g. imagebrowser/view/imagecache/25/thumbnail)
+ */
+function imagebrowser_view_imagecache($nid = 0, $size = NULL) {
+  //Check preset is valid
+  $presets = imagecache_presets();
+  foreach ($presets as $preset) {
+    if ($preset['presetname'] == $size) {
+      $namespace = $size;
+    }
+  }
+  if (!isset($namespace)) {
+    return drupal_not_found();
+  }
+
+  //Check node is valid
+  if (isset($nid)) {
+    $node = node_load(array('type' => 'image', 'nid' => $nid));
+    if ($node) {
+      if (!node_access('view', $node)) {
+        return drupal_access_denied();
+      }
+      if (isset($node->images['_original'])) {
+        $file = $node->images['_original'];
+        //print imagecache_create_path($namespace, $file);
+        _imagecache_cache($namespace, $file);
+        exit;
+      }
+    }
+  }
+  return drupal_not_found();
+}

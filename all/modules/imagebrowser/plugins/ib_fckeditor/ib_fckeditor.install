@@ -1,0 +1,10 @@
+<?php
+// $Id: ib_fckeditor.install,v 1.1.2.2 2009/10/24 17:04:41 starnox Exp $
+
+function ib_fckeditor_install() {
+  //Do Nothing
+}
+
+function ib_fckeditor_uninstall() {
+  //Do Nothing
+}

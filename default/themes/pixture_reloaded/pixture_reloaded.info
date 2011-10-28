@@ -1,0 +1,45 @@
+ ; $Id: pixture_reloaded.info,v 1.4 2008/09/09 13:14:22 jmburnz Exp $
+
+name = Pixture Reloaded
+description = Recolorable multi-column liquid/fixed layout theme. Original Design by Pixture Studio, Ported to CSS layout by <a href="http://adaptivethemes.com">AdaptiveThemes</a>.
+version = VERSION
+core = 6.x
+engine = phptemplate
+
+  ; The regions defined in the page.tpl.php files.  The name in
+  ; brackets is the name of the variable. The text proceeding the
+  ; = sign is the short description you see on the block configuration
+  ; page.
+
+regions[header]          = Header blocks
+regions[superfish]       = Superfish menu
+regions[content_top]     = Content top
+regions[content]         = Content
+regions[content_bottom]  = Content bottom
+regions[left]            = Sidebar left
+regions[right]           = Sidebar right
+regions[footer]          = footer
+
+stylesheets[all][] = layout.css
+stylesheets[all][] = style.css
+
+  ; The "features" control which of these check boxes display on the
+  ; admin/build/themes configuration page. This is useful for
+  ; suppressing check boxes for elements not used by your theme.
+
+features[] = logo
+features[] = name
+features[] = slogan
+features[] = mission
+features[] = node_user_picture
+features[] = comment_user_picture
+features[] = search
+features[] = favicon
+features[] = primary_links
+;features[] = secondary_links ;No support for secondary links
+; Information added by drupal.org packaging script on 2009-05-07
+version = "6.x-3.2"
+core = "6.x"
+project = "pixture_reloaded"
+datestamp = "1241716288"
+

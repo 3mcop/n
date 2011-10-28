@@ -1,0 +1,66 @@
+<?php
+// $Id: ib_wysiwyg.module,v 1.1.2.3 2010/05/12 06:33:03 blixxxa Exp $
+
+/**
+ * Implementation of hook_help().
+ */
+function ib_wysiwyg_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case "admin/help#ib_wysiwyg":
+      $output = '<p>'. t("Enable the use of WYSIWYG API with Image Browser.") .'</p>';
+      break;
+  }
+  return $output;
+}
+
+/**
+ * Implementation of hook_imagebrowserapi().
+ */
+function ib_wysiwyg_imagebrowserapi($op) {
+  switch ($op) {
+    case 'load':
+      return array(
+        'url' => drupal_get_path('module', 'ib_wysiwyg') .'/ib_wysiwyg.js',
+      );
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_init().
+ */
+function ib_wysiwyg_init() {
+}
+
+/**
+ * Implementation of hook_wysiwyg_include_directory().
+ */
+function ib_wysiwyg_wysiwyg_include_directory($type) {
+  switch ($type) {
+    case 'plugins':
+      return $type;
+  }
+}
+
+/**
+ * Implementation of hook_wysiwyg_plugin().
+ */
+function ib_wysiwyg_imagebrowser_plugin() {
+  drupal_add_css(drupal_get_path('module', 'ib_wysiwyg') . "/ib_wysiwyg_init.css");
+  if(module_exists('jquery_ui')){ jquery_ui_add('ui.dialog'); };
+  
+  $plugins['imagebrowser'] = array(
+    'title' => t('Image Browser'),
+    'vendor url' => 'http://drupal.org/project/imagebrowser',
+    'icon file' => 'ib_wysiwyg_icon.gif',
+    'icon path' => drupal_get_path('module', 'ib_wysiwyg'),
+    'icon title' => t('Insert images via Image Browser'),
+    'js path' => drupal_get_path('module', 'ib_wysiwyg'),
+    'js file' => 'ib_wysiwyg_init.js',
+    'css path' => file_directory_path(),
+    'css file' => 'ibstyles.css',
+    'settings' => array(),
+  );
+  return $plugins;
+}

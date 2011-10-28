@@ -1,0 +1,233 @@
+/* $Id: layout.css,v 1.14 2009/05/07 17:00:40 jmburnz Exp $ */
+/*
+ * LAYOUT STYLES
+ * Define CSS classes to create a table-free, 3-column, 2-column, or single
+ * column layout depending on whether blocks are enabled in the left or right
+ * columns.
+ *
+ * The Pixture Reloaded layout is based on the Holy Grail layout used in the 
+ * Zen Theme. http://drupal.org/project/zen
+ *
+ */
+/*-------------------------------------------------------------------*/
+/*                              Reset                                */
+/*-------------------------------------------------------------------*/
+body,
+.comment,
+#logo,
+#branding,
+#site-slogan,
+#content-inner,
+#sidebar-left .block,
+#sidebar-right .block,
+#header-blocks .block,
+#content-top .block,
+#content-bottom .block,
+#footer .block .content,
+#forum td.forum,
+#forum .name a,
+#forum .description,
+div.admin-panel,
+li,
+.item-list ul,
+ul.images li h3,
+div.item-list ul.pager li,
+ul.pager li,
+.tabs ul,
+div.page-links a.page-previous,
+div.page-links a.page-up,
+div.page-links a.page-next,
+ul.images li h3 {
+  padding: 0; 
+  margin: 0;
+}
+/*-------------------------------------------------------------------*/
+/*                              Page                                 */
+/*-------------------------------------------------------------------*/
+#page {
+  margin: 0 auto;
+  padding: 0px;
+  max-width: 1600px;
+  min-width: 800px;
+}
+/*-------------------------------------------------------------------*/
+/*                             Skip to                               */
+/*-------------------------------------------------------------------*/
+#skip-to-content {
+  height: 0; 
+		overflow: hidden;
+  font-size: 0.8em;
+}
+/*-------------------------------------------------------------------*/
+/*                               Header                              */
+/*-------------------------------------------------------------------*/
+#header {
+  margin: 0 0 15px 0;
+  padding: 0;
+  height: 120px;
+  background; #5fa5f3;
+}
+#logo {
+  margin: 0 10px 0 0;
+  padding: 0;
+  height: 120px;
+  height: 88px;
+  float: left;
+  overflow: hidden;
+}
+#head-elements {
+  height: 88px;
+  margin: 0 0 0 15px;
+  padding: 0;
+    background: none no-repeat scroll right #5fa5f3;
+  background-image:url('images/naco-team.jpg');
+
+  
+}
+h1#site-name, 
+div#site-name {
+  margin: 0;
+  padding: 30px 0 0 45px;
+  font-size: 0em;
+  line-height: 0em;
+  color: #FFF;
+}
+#site-slogan em {
+  font-style: normal;
+  margin: 0;
+}
+#search-box {
+  float: right;
+  position: relative;
+  margin: 35px 20px 0pt 0pt; /* pull the search box into position */
+  padding: 0;
+}
+/*-------------------------------------------------------------------*/
+/*                   Additional Regions & blocks                     */
+/*-------------------------------------------------------------------*/
+#header-blocks, 
+#content-top, 
+#content-bottom {
+  clear: both; /* Clear the header */
+  text-align: center;
+}
+#header-blocks .block-inner, 
+#content-top .block-inner, 
+#content-bottom .block-inner { margin: 0 auto; }
+/*-------------------------------------------------------------------*/
+/*                              Main                                 */
+/*-------------------------------------------------------------------*/
+#main {
+  position: relative;
+  padding: 0 15px 10px 35px;
+}
+#main-inner {}
+/*-------------------------------------------------------------------*/
+/*                            Content                                */
+/*-------------------------------------------------------------------*/
+#content {
+  float: left;
+  width: 97%;
+  margin-left: 0;
+  margin-right: -97%; /* Negative value of #content's width + left margin. */
+  padding: 0; /* DO NOT CHANGE. Add padding or margin to #content-inner. */
+}
+.two-sidebars #content-inner {
+  padding-left: 235px; /* The width + left margin of #sidebar-left. */
+  padding-right: 235px; /* The width + right margin of #sidebar-right. */
+}
+.sidebar-left #content-inner {
+  padding-left: 235px; /* The width + left margin of #sidebar-left. */
+  padding-right: 0;
+}
+.sidebar-right #content-inner {
+  padding-left: 0;
+  padding-right: 235px; /* The width + right margin of #sidebar-right. */
+}
+/* Set wider margins in full node view for readability 
+   This uses the extra body class ".node-full-view", set in pixture_reloaded_preprocess_page  */
+.node-full-view.two-sidebars #content-inner {
+  padding-left: 265px; /* The width + left margin of #sidebar-left. */
+  padding-right: 265px; /* The width + right margin of #sidebar-right. */
+}
+.node-full-view.sidebar-left #content-inner {
+  padding-left: 265px; /* The width + left margin of #sidebar-left. */
+  padding-right: 0;
+}
+.node-full-view.sidebar-right #content-inner {
+  padding-left: 0;
+  padding-right: 265px; /* The width + right margin of #sidebar-right. */
+}
+/*-------------------------------------------------------------------*/
+/*                        Primary, Superfish                         */
+/*-------------------------------------------------------------------*/
+#primary,
+#superfish       { padding: 0; }
+#primary-inner   { margin: 6px 0 0 15px;}
+#superfish-inner { margin: 0 0 0 15px;}
+/* Zero left margin for centered menus (optional)
+#primary-inner   { margin: 6px 0 0 0;}
+#superfish-inner { margin: 0 0 0 0;}
+*/
+#primary ul          { margin: 0;}
+#primary ul li.first { padding-left: 0; }
+
+/*-------------------------------------------------------------------*/
+/*                             Sidebars                              */
+/*-------------------------------------------------------------------*/
+/** sidebar-left **/
+#sidebar-left {
+  float: left;
+  width: 220px;
+  margin-left: 0;
+  margin-right: -220px; /* Negative value of #sidebar-left's width + left margin. */
+  padding: 0; /* DO NOT CHANGE. Add padding or margin to #sidebar-left-inner. */
+}
+/** sidebar-right **/
+#sidebar-right {
+  float: right;
+  width: 220px;
+  margin-left: -220px; /* Negative value of #sidebar-right's width + right margin. */
+  margin-right: 0;
+  padding: 0; /* DO NOT CHANGE. Add padding or margin to #sidebar-right-inner. */
+}
+/*-------------------------------------------------------------------*/
+/*                          Footer & Closure                         */
+/*-------------------------------------------------------------------*/
+#footer { min-height: 100px; }
+
+#footer-message {   
+background: none no-repeat scroll center #fff;
+background-image:url('images/footer-strip.png'); 
+padding: 80px 0 20px 0; }
+#closure-blocks {}
+/*-------------------------------------------------------------------*/
+/*                   Prevent overflowing content                     */
+/*-------------------------------------------------------------------*/
+#header,
+#content,
+#navbar,
+#sidebar-left,
+#sidebar-right,
+#footer,
+#closure-blocks {
+  overflow: visible;
+  word-wrap: break-word; /* A very nice CSS3 property */
+}
+/*-------------------------------------------------------------------*/
+/*                             Clearing                              */
+/*-------------------------------------------------------------------*/
+/* Clearing floats without extra markup
+   http://www.positioniseverything.net/easyclearing.html */
+.clearfix:after {
+  content: "."; 
+  display: block; 
+  height: 0; 
+  clear: both; 
+  visibility: hidden;
+}
+.clearfix { display:inline-block; }
+* html .clearfix { height: 1%; }
+.clearfix        { display: block; }
+/* Regular clearing */
+.clear { clear:both; }

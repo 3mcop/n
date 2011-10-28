@@ -1,0 +1,189 @@
+<?php
+// $Id: imagebrowser.install,v 1.1.4.4 2010/02/06 23:59:12 blixxxa Exp $
+
+/**
+ * @file
+ * The install file for Image Browser.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function imagebrowser_install() {
+  drupal_install_schema('imagebrowser');
+
+  // Install ImageCache presets
+  if (module_exists('imagecache')) {
+    $imagecache_presets = array(
+      array(
+        'presetname' => 'ib_thumbnail',
+      )
+    );
+    
+    $imagecache_actions = array(
+      'ib_thumbnail' => array(
+        'action' => 'imagecache_scale',
+        'data' => array(
+          'width' => 100,
+          'height' => 100,
+          'upscale' => 1,
+        ),
+        'weight' => 0,
+      )
+    );
+    
+    foreach ($imagecache_presets as $preset) {
+        $preset = imagecache_preset_save($preset);
+        $imagecache_actions[$preset['presetname']]['presetid'] = $preset['presetid'];
+        imagecache_action_save($imagecache_actions[$preset['presetname']]);
+        
+        drupal_set_message(t('ImageCache preset %id: %name and corresponding actions saved.', array('%id' => $preset['presetid'], '%name' => $preset['presetname'])));
+    }
+  }
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function imagebrowser_uninstall() {
+  drupal_uninstall_schema('imagebrowser');
+
+  // Delete ImageCache presets
+  if (module_exists('imagecache')) {
+    $preset = imagecache_preset_by_name('ib_thumbnail');
+    imagecache_preset_delete($preset['presetid']);
+    
+    drupal_set_message(t('ImageCache preset %id: %name has been removed.', array('%id' => $preset['presetid'], '%name' => $preset['presetname'])));
+  }
+  
+  // Delete variables stored in the DB
+  db_query("DELETE FROM {variable} WHERE name LIKE 'imagebrowser%'");
+}
+
+/**
+ * Implementation of hook_requirements().
+ */
+function imagebrowser_requirements($phase) {
+  $requirements = array();
+  // Ensure translations don't break at install time
+  $t = get_t();
+
+  // Report Drupal version
+  if ($phase == 'install') {
+    if (module_exists('imageapi')) {
+      $toolkits = imageapi_get_available_toolkits();
+
+      if (count($toolkits) == 0) {
+        $requirements['image_toolkit'] = array(
+          'title' => $t('Image API Toolkit'),
+          'description' => $t('There are no image toolkit modules enabled. Toolkit modules can be enabled from the <a href="!admin-build-modules">module configuration page</a>.', array('!admin-build-modules' => url('admin/build/modules'))),
+          'severity' => REQUIREMENT_ERROR,
+        );
+      }
+    }
+    else {
+      $requirements['imageapi'] = array(
+        'title' => $t('Image API'),
+        'description' => $t("Please enable Image API and one of it's toolkits first."),
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+
+  return $requirements;
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function imagebrowser_schema() {
+    $schema['imagebrowser_styles'] = array(
+    'fields' => array(
+      'sid' => array(
+        'description' => t('The primary identifier for a style.'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'name' => array(
+        'description' => t('The name of the CDN mirror.'),
+        'type' => 'varchar',
+        'length' => 20,
+        'not null' => TRUE,
+        'default' => ''),
+      'css' => array(
+        'description' => t('The css properties of the style.'),
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => TRUE),
+    ),
+    'primary key' => array('sid'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Updates
+ */
+function imagebrowser_update_6100() {
+  $ret = array();
+  
+  $schema['imagebrowser_styles'] = array(
+    'fields' => array(
+      'sid' => array(
+        'description' => t('The primary identifier for a style.'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'name' => array(
+        'description' => t('The name of the CDN mirror.'),
+        'type' => 'varchar',
+        'length' => 20,
+        'not null' => TRUE,
+        'default' => ''),
+      'css' => array(
+        'description' => t('The css properties of the style.'),
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => TRUE),
+      ),
+    'primary key' => array('sid'),
+  );
+  
+  db_create_table($ret, 'imagebrowser_styles', $schema['imagebrowser_styles']);
+  return $ret;
+}
+
+function imagebrowser_update_6101() {
+  $ret = array();
+  
+  // Install ImageCache presets
+  if (module_exists('imagecache')) {
+    $imagecache_presets = array(
+      array(
+        'presetname' => 'ib_thumbnail',
+      )
+    );
+    
+    $imagecache_actions = array(
+      'ib_thumbnail' => array(
+        'action' => 'imagecache_scale',
+        'data' => array(
+          'width' => 100,
+          'height' => 100,
+          'upscale' => 1,
+        ),
+        'weight' => 0,
+      )
+    );
+    
+    foreach ($imagecache_presets as $preset) {
+      $preset = imagecache_preset_save($preset);
+      $imagecache_actions[$preset['presetname']]['presetid'] = $preset['presetid'];
+      imagecache_action_save($imagecache_actions[$preset['presetname']]);
+      drupal_set_message(t('ImageCache preset %id: %name and corresponding actions saved.', array('%id' => $preset['presetid'], '%name' => $preset['presetname'])));
+    }
+  }
+  
+  return $ret;
+}

@@ -1,0 +1,37 @@
+<?php
+// $Id: ib_fckeditor.module,v 1.1.2.2 2009/10/24 17:04:41 starnox Exp $
+
+/**
+ * Implementation of hook_help().
+ */
+function ib_fckeditor_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case "admin/help#ib_fckeditor":
+      $output = '<p>'. t("Enable the use of FCKeditor with Image Browser.") .'</p>';
+      break;
+  }
+  return $output;
+}
+
+/**
+ * Implementation of hook_imagebrowserapi().
+ */
+function ib_fckeditor_imagebrowserapi($op) {
+  switch ($op) {
+    case 'load':
+      return array(
+        'url' => drupal_get_path('module', 'ib_fckeditor') .'/ib_fckeditor.js',
+      );
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_init().
+ */
+function ib_fckeditor_init() {
+  drupal_add_js(drupal_get_path('module', 'ib_fckeditor') . "/ib_fckeditor_init.js");
+  drupal_add_css(drupal_get_path('module', 'ib_fckeditor') . "/ib_fckeditor_init.css");
+  if(module_exists('jquery_ui')){ jquery_ui_add('ui.dialog'); };
+}

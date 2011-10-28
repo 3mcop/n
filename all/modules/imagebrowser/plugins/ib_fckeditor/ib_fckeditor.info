@@ -1,0 +1,14 @@
+; $Id: ib_fckeditor.info,v 1.1.2.2 2009/10/24 17:04:41 starnox Exp $
+name = Image Browser Plugin - FCKeditor
+description = Enable the use of FCKeditor with Image Browser.
+core = 6.x
+package = "Media"
+dependencies[] = imagebrowser
+dependencies[] = jquery_ui
+dependencies[] = fckeditor
+; Information added by drupal.org packaging script on 2010-07-11
+version = "6.x-2.x-dev"
+core = "6.x"
+project = "imagebrowser"
+datestamp = "1278834536"
+

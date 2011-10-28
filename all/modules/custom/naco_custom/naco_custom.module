@@ -1,0 +1,26 @@
+<?php
+
+function naco_custom_form_alter(&$form, &$form_state, $form_id) {
+		//dsm("hello!");
+			
+		//if it's the mailchimp signup module then do XYZ	 
+		if($form['form_id']['#value'] == 'mailchimp_subscribe_anon_form' && $user->uid == 0){
+			
+		//dsm($form);
+		
+		//set first and second name to required
+		$form['mailchimp_lists']['c336e0146e']['FNAME']['#required'] = TRUE;
+		$form['mailchimp_lists']['c336e0146e']['LNAME']['#required'] = TRUE;
+		
+		//set width of those fields
+		$form['mailchimp_lists']['c336e0146e']['FNAME']['#size'] = 18;
+		$form['mailchimp_lists']['c336e0146e']['LNAME']['#size'] = 18;
+		$form['mailchimp_lists']['c336e0146e']['EMAIL']['#size'] = 18;
+		
+		//make the email field come last
+		$form['mailchimp_lists']['c336e0146e']['EMAIL']['#weight'] = 5;
+
+		return $form;
+	};
+		
+}	

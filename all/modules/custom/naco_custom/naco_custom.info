@@ -1,0 +1,3 @@
+; $Id: naco_custom.info $
+name = "naco_custom"
+core = "6.x"

@@ -1,0 +1,10 @@
+<?php
+// $Id: ib_wysiwyg.install,v 1.1.2.1 2009/10/24 17:04:41 starnox Exp $
+
+function ib_wysiwyg_install() {
+  //Do Nothing
+}
+
+function ib_wysiwyg_uninstall() {
+  //Do Nothing
+}

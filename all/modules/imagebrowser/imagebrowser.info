@@ -1,0 +1,13 @@
+; $Id: imagebrowser.info,v 1.2.4.2 2009/10/24 17:04:41 starnox Exp $
+name = Image Browser
+description = A simple and beautiful image browser.
+core = 6.x
+package = "Media"
+dependencies[] = imagecache
+dependencies[] = views
+; Information added by drupal.org packaging script on 2010-07-11
+version = "6.x-2.x-dev"
+core = "6.x"
+project = "imagebrowser"
+datestamp = "1278834536"
+
