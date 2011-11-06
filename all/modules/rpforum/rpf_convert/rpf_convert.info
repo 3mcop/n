@@ -1,7 +1,0 @@
-; $Id$
-name = RP Forum Convertor
-description = Rough SMF Forum convertor to be used with RP Forum - optional
-dependencies[] = rpforum
-package = RP Forum
-version = 0.5
-core = 6.x
