@@ -232,24 +232,3 @@ padding: 80px 0 20px 0; }
 /* Regular clearing */
 .clear { clear:both; }
 
-
-/*-------------------------------------------------------------------*/
-/*                             rpforum                               */
-/*-------------------------------------------------------------------*/
-
-table.container-forums th.rp-th-name {
-    font-weight: bold;
-    padding-left: 30px;
-}
-table.container-forums tr.forum-row td {
-    padding-bottom: 10px;
-    padding-top: 10px;
-}
-.rpforum-moderation-controls {
-    width: 200px;
-}
-
-.not-logged-in .rpforum-new-topic-link {
-    display:none;
-}
-
