@@ -923,6 +923,10 @@ display:none;
   margin-right: 7px;
 }
 
+.block-content-inner .view-forum-adverts-admin .views-row-last {
+  margin-right: 0;
+}
+
 .page-forum #content-header {
   clear: both;
 }
