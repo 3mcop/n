@@ -917,3 +917,7 @@ display:none;
 .forum-post-panel-main {
   min-height: 150px;
 }
+
+.block-content-inner .view-forum-adverts-admin .views-row {
+  float: left;
+}
