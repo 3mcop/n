@@ -920,11 +920,11 @@ display:none;
 
 .block-content-inner .view-forum-adverts-admin .views-row {
   float: left;
-  margin-right: 7px;
+  margin-left: 10px;
 }
 
-.block-content-inner .view-forum-adverts-admin .views-row-last {
-  margin-right: 0;
+.block-content-inner .view-forum-adverts-admin .views-row-first {
+  margin-left: 0;
 }
 
 .page-forum #content-header {
