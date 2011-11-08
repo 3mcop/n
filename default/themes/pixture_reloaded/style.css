@@ -922,3 +922,7 @@ display:none;
   float: left;
   margin-right: 7px;
 }
+
+.page-forum #content-header {
+  clear: both;
+}
