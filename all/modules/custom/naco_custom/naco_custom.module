@@ -29,7 +29,7 @@ function naco_custom_form_alter(&$form, &$form_state, $form_id) {
  * Implementation of hook_block()
  */
 function naco_custom_block( $op = 'list', $delta = 0, $edit = array() ) {
-dsm( $op );
+
   switch ( $op ) {
 
   case 'list' :
