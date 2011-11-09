@@ -44,6 +44,17 @@ function naco_forums_node_info() {
       'min_word_count' => '0',
       'help' => '',
     ),
+    'forum_user_profile' => array(
+      'name' => t('Forum user profile'),
+      'module' => 'features',
+      'description' => t('Public information about a forum user.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'has_body' => '0',
+      'body_label' => '',
+      'min_word_count' => '0',
+      'help' => '',
+    ),
   );
   return $items;
 }
