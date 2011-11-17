@@ -100,6 +100,8 @@
 
         <div id="content-header" class="clearfix">
          <a name="main-content" id="main-content"></a>
+          <?php // if ( arg(0) == 'forum' || strpos( drupal_lookup_path( 'alias', $_GET['q'] ), 'forum' ) === 0 ) { print $breadcrumb; } ?>
+          <?php if ( arg(0) == 'forum' || $node->type == 'forum' ) { print $breadcrumb; } ?>
           <?php if ($title): ?><h1 class="title"><?php print $title; ?></h1><?php endif; ?>
           <?php if ($tabs): ?><div class="tabs"><?php print $tabs; ?></div><?php endif; ?>
           <?php if ($messages): print $messages; endif; ?>
