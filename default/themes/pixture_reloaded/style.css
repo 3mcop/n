@@ -926,3 +926,7 @@ display:none;
 .page-forum #content-header {
   clear: both;
 }
+
+.forum-post-panel-main img {
+  max-width: 100%;
+}
