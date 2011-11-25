@@ -28,7 +28,6 @@ function naco_forums_user_default_permissions() {
     'roles' => array(
       '0' => 'NACO Admin',
       '1' => 'forum sponsor',
-      '2' => 'forum user',
     ),
   );
 
@@ -62,7 +61,6 @@ function naco_forums_user_default_permissions() {
     'roles' => array(
       '0' => 'NACO Admin',
       '1' => 'forum sponsor',
-      '2' => 'forum user',
     ),
   );
 
