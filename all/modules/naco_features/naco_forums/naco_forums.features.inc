@@ -38,7 +38,7 @@ function naco_forums_node_info() {
       'module' => 'features',
       'description' => '',
       'has_title' => '1',
-      'title_label' => t('Title'),
+      'title_label' => t('Advert title'),
       'has_body' => '0',
       'body_label' => '',
       'min_word_count' => '0',

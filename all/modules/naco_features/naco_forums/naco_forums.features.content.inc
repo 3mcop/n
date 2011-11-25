@@ -51,7 +51,7 @@ function naco_forums_content_default_fields() {
     'min' => '',
     'max' => '',
     'allowed_values' => '1|Yes
-2|No - choose forums',
+2|No - choose forums...',
     'allowed_values_php' => '',
     'widget' => array(
       'default_value' => array(
@@ -122,7 +122,7 @@ function naco_forums_content_default_fields() {
         ),
       ),
       'default_value_php' => NULL,
-      'label' => 'Display in which forums?',
+      'label' => 'Forums',
       'weight' => 0,
       'description' => 'You may select multiple forums by holding down the Ctrl key as you click on each forum.',
       'type' => 'content_taxonomy_select',
@@ -185,6 +185,76 @@ function naco_forums_content_default_fields() {
       'description' => 'choose an image file to upload from your computer.',
       'type' => 'filefield_widget',
       'module' => 'filefield',
+    ),
+  );
+
+  // Exported field: field_advert_link
+  $fields['forum_advert-field_advert_link'] = array(
+    'field_name' => 'field_advert_link',
+    'type_name' => 'forum_advert',
+    'display_settings' => array(
+      'label' => array(
+        'format' => 'above',
+        'exclude' => 0,
+      ),
+      'teaser' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '4' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '2' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '3' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'token' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+    ),
+    'widget_active' => '1',
+    'type' => 'link',
+    'required' => '1',
+    'multiple' => '0',
+    'module' => 'link',
+    'active' => '1',
+    'attributes' => array(
+      'target' => 'default',
+      'rel' => '',
+      'class' => '',
+      'title' => '',
+    ),
+    'display' => array(
+      'url_cutoff' => '80',
+    ),
+    'url' => 0,
+    'title' => 'none',
+    'title_value' => '',
+    'enable_tokens' => 0,
+    'validate_url' => 1,
+    'widget' => array(
+      'default_value' => array(
+        '0' => array(
+          'title' => '',
+          'url' => '',
+        ),
+      ),
+      'default_value_php' => NULL,
+      'label' => 'Advertiser link',
+      'weight' => '-3',
+      'description' => '',
+      'type' => 'link',
+      'module' => 'link',
     ),
   );
 
@@ -378,9 +448,10 @@ function naco_forums_content_default_fields() {
   // Translatables
   // Included for use with string extractors like potx.
   t('Advert image');
+  t('Advertiser link');
   t('Constituency association');
   t('Display in all forums?');
-  t('Display in which forums?');
+  t('Forums');
   t('Name');
   t('Show on top level forums page?');
 

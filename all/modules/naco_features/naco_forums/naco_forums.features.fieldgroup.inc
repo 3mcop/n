@@ -46,7 +46,7 @@ function naco_forums_fieldgroup_default_groups() {
         ),
       ),
     ),
-    'weight' => '-3',
+    'weight' => '-2',
     'fields' => array(
       '0' => 'field_advert_top_level',
       '1' => 'field_advert_all_forums',
