@@ -33,6 +33,17 @@ function naco_forums_imagecache_default_presets() {
  */
 function naco_forums_node_info() {
   $items = array(
+    'editable_block' => array(
+      'name' => t('Editable block'),
+      'module' => 'features',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'has_body' => '1',
+      'body_label' => t('Body'),
+      'min_word_count' => '0',
+      'help' => '',
+    ),
     'forum_advert' => array(
       'name' => t('Forum advert'),
       'module' => 'features',
