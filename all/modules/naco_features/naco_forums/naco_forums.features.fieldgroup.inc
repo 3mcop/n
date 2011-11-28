@@ -14,12 +14,11 @@ function naco_forums_fieldgroup_default_groups() {
     'label' => 'Where to display advert',
     'settings' => array(
       'form' => array(
-        'style' => 'fieldset',
-        'description' => '',
+        'style' => 'fieldset_collapsed',
+        'description' => '<strong>Ignore these settings for now. These will be implemented if certain issues are fixed in Drupal Views.</strong>',
       ),
       'display' => array(
-        'description' => '',
-        'label' => 'above',
+        'description' => 'Ignore these settings for now. These will be implemented if certain issues are fixed in Drupal Views.',
         'teaser' => array(
           'format' => 'fieldset',
           'exclude' => 0,
@@ -44,6 +43,7 @@ function naco_forums_fieldgroup_default_groups() {
           'format' => 'fieldset',
           'exclude' => 0,
         ),
+        'label' => 'above',
       ),
     ),
     'weight' => '-2',

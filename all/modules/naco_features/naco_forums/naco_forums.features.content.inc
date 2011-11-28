@@ -42,7 +42,7 @@ function naco_forums_content_default_fields() {
     ),
     'widget_active' => '1',
     'type' => 'number_integer',
-    'required' => '1',
+    'required' => '0',
     'multiple' => '0',
     'module' => 'number',
     'active' => '1',
@@ -50,8 +50,8 @@ function naco_forums_content_default_fields() {
     'suffix' => '',
     'min' => '',
     'max' => '',
-    'allowed_values' => '1|Yes
-2|No - choose forums...',
+    'allowed_values' => '1|All forums
+0|No - choose forums...',
     'allowed_values_php' => '',
     'widget' => array(
       'default_value' => array(
@@ -295,7 +295,7 @@ function naco_forums_content_default_fields() {
     ),
     'widget_active' => '1',
     'type' => 'number_integer',
-    'required' => '1',
+    'required' => '0',
     'multiple' => '0',
     'module' => 'number',
     'active' => '1',
@@ -309,7 +309,7 @@ function naco_forums_content_default_fields() {
     'widget' => array(
       'default_value' => array(
         '0' => array(
-          'value' => '',
+          'value' => '1',
         ),
       ),
       'default_value_php' => NULL,
