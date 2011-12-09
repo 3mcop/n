@@ -214,7 +214,7 @@ function naco_forums_views_default_views() {
         'multiple_from' => '',
         'multiple_reversed' => FALSE,
       ),
-      'exclude' => 1,
+      'exclude' => 0,
       'id' => 'field_advert_top_level_value',
       'table' => 'node_data_field_advert_top_level',
       'field' => 'field_advert_top_level_value',
@@ -230,8 +230,10 @@ function naco_forums_views_default_views() {
         'text' => '[field_advert_all_forums_value]',
         'make_link' => 0,
         'path' => '',
+        'absolute' => 0,
         'link_class' => '',
         'alt' => '',
+        'rel' => '',
         'prefix' => '',
         'suffix' => '',
         'target' => '',
@@ -246,6 +248,7 @@ function naco_forums_views_default_views() {
       'empty' => '',
       'hide_empty' => 0,
       'empty_zero' => 0,
+      'hide_alter_empty' => 1,
       'link_to_node' => 0,
       'label_type' => 'widget',
       'format' => 'default',
@@ -298,7 +301,7 @@ function naco_forums_views_default_views() {
     return \'\';
   }
  ?>',
-      'exclude' => 1,
+      'exclude' => 0,
       'id' => 'phpcode',
       'table' => 'customfield',
       'field' => 'phpcode',
@@ -342,7 +345,7 @@ function naco_forums_views_default_views() {
         'multiple_from' => '',
         'multiple_reversed' => 0,
       ),
-      'exclude' => 1,
+      'exclude' => 0,
       'id' => 'field_advert_forums_value',
       'table' => 'node_data_field_advert_forums',
       'field' => 'field_advert_forums_value',
@@ -450,7 +453,7 @@ function naco_forums_views_default_views() {
     ),
   ));
   $handler->override_option('title', 'Manage adverts');
-  $handler->override_option('header', 'If you need to add a new advert to the main forum screen then <a href="/node/add/forum-advert">create a new forum advert node</a>.');
+  $handler->override_option('header', 'If you need to add a new advert then <a href="/node/add/forum-advert">create a new forum advert node</a>.');
   $handler->override_option('header_empty', 1);
   $handler->override_option('style_plugin', 'draggabletable');
   $handler->override_option('style_options', array(
@@ -554,7 +557,7 @@ function naco_forums_views_default_views() {
     'weight' => 0,
     'name' => 'navigation',
   ));
-  $handler = $view->new_display('block', 'Adverts display block', 'block_1');
+  $handler = $view->new_display('block', 'Adverts display block - per forum', 'block_1');
   $handler->override_option('fields', array(
     'title' => array(
       'label' => 'Title',
@@ -705,7 +708,7 @@ function naco_forums_views_default_views() {
     ),
   ));
   $handler->override_option('arguments', array(
-    'name' => array(
+    'tid' => array(
       'default_action' => 'default',
       'style_plugin' => 'default_summary',
       'style_options' => array(),
@@ -713,21 +716,18 @@ function naco_forums_views_default_views() {
       'wildcard_substitution' => 'All',
       'title' => '',
       'breadcrumb' => '',
-      'default_argument_type' => 'taxonomy_tid',
+      'default_argument_type' => 'php',
       'default_argument' => '',
       'validate_type' => 'taxonomy_term',
       'validate_fail' => 'not found',
-      'glossary' => 0,
-      'ignorecase' => 0,
-      'limit' => '0',
-      'case' => 'none',
-      'path_case' => 'none',
-      'transform_dash' => 0,
+      'break_phrase' => 0,
       'add_table' => 0,
       'require_value' => 0,
-      'id' => 'name',
-      'table' => 'term_data',
-      'field' => 'name',
+      'reduce_duplicates' => 0,
+      'set_breadcrumb' => 0,
+      'id' => 'tid',
+      'table' => 'term_node',
+      'field' => 'tid',
       'validate_user_argument_type' => 'uid',
       'validate_user_roles' => array(
         2 => 0,
@@ -736,15 +736,22 @@ function naco_forums_views_default_views() {
         4 => 0,
         3 => 0,
       ),
+      'override' => array(
+        'button' => 'Use default',
+      ),
       'relationship' => 'none',
       'default_options_div_prefix' => '',
-      'default_argument_fixed' => '2',
+      'default_taxonomy_tid_term_page' => 0,
+      'default_taxonomy_tid_node' => 0,
+      'default_taxonomy_tid_limit' => 0,
+      'default_taxonomy_tid_vids' => array(
+        1 => 0,
+      ),
       'default_argument_user' => 0,
-      'default_argument_php' => 'dsm( arg(0) . \'/\' . arg(1) );
-$term = taxonomy_get_term( arg(1) ); 
-dsm( $term );
-return $term->tid;',
+      'default_argument_fixed' => '',
+      'default_argument_php' => 'return arg(1);',
       'validate_argument_node_type' => array(
+        'editable_block' => 0,
         'forum_advert' => 0,
         'forum_user_profile' => 0,
         'forum' => 0,
@@ -759,18 +766,9 @@ return $term->tid;',
         1 => 1,
       ),
       'validate_argument_type' => 'tid',
-      'validate_argument_transform' => 1,
+      'validate_argument_transform' => 0,
       'validate_user_restrict_roles' => 0,
       'validate_argument_php' => '',
-      'override' => array(
-        'button' => 'Use default',
-      ),
-      'default_taxonomy_tid_term_page' => 0,
-      'default_taxonomy_tid_node' => 0,
-      'default_taxonomy_tid_limit' => 0,
-      'default_taxonomy_tid_vids' => array(
-        1 => 1,
-      ),
     ),
   ));
   $handler->override_option('filters', array(
@@ -808,9 +806,9 @@ return $term->tid;',
       'relationship' => 'none',
     ),
   ));
-  $handler->override_option('block_description', 'Adverts display block');
+  $handler->override_option('block_description', 'Adverts display block - per forum');
   $handler->override_option('block_caching', -1);
-  $handler = $view->new_display('block', 'Top level adverts display block', 'block_2');
+  $handler = $view->new_display('block', 'Adverts display block - top level', 'block_2');
   $handler->override_option('fields', array(
     'title' => array(
       'label' => 'Title',
@@ -1015,7 +1013,215 @@ return $term->tid;',
       'reduce_duplicates' => 1,
     ),
   ));
-  $handler->override_option('block_description', 'Top level adverts display block');
+  $handler->override_option('block_description', 'Adverts display block - top level');
+  $handler->override_option('block_caching', -1);
+  $handler = $view->new_display('block', 'Adverts display block - all forums', 'block_3');
+  $handler->override_option('fields', array(
+    'title' => array(
+      'label' => 'Title',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'link_to_node' => 0,
+      'exclude' => 1,
+      'id' => 'title',
+      'table' => 'node',
+      'field' => 'title',
+      'override' => array(
+        'button' => 'Use default',
+      ),
+      'relationship' => 'none',
+    ),
+    'field_advert_link_url' => array(
+      'label' => 'Advertiser link',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'link_to_node' => 0,
+      'label_type' => 'widget',
+      'format' => 'default',
+      'multiple' => array(
+        'group' => TRUE,
+        'multiple_number' => '',
+        'multiple_from' => '',
+        'multiple_reversed' => FALSE,
+      ),
+      'exclude' => 1,
+      'id' => 'field_advert_link_url',
+      'table' => 'node_data_field_advert_link',
+      'field' => 'field_advert_link_url',
+      'override' => array(
+        'button' => 'Use default',
+      ),
+      'relationship' => 'none',
+    ),
+    'value0' => array(
+      'label' => 'Order',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'exclude' => 1,
+      'id' => 'value0',
+      'table' => 'draggableviews_structure_node0',
+      'field' => 'value0',
+      'override' => array(
+        'button' => 'Use default',
+      ),
+      'relationship' => 'none',
+    ),
+    'field_advert_image_fid_1' => array(
+      'label' => '',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 1,
+        'path' => '[field_advert_link_url]',
+        'link_class' => '',
+        'alt' => '[title]',
+        'prefix' => '',
+        'suffix' => '',
+        'target' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'html' => 0,
+        'strip_tags' => 0,
+      ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'link_to_node' => 0,
+      'label_type' => 'none',
+      'format' => 'full-size_default',
+      'multiple' => array(
+        'group' => TRUE,
+        'multiple_number' => '',
+        'multiple_from' => '',
+        'multiple_reversed' => FALSE,
+      ),
+      'exclude' => 0,
+      'id' => 'field_advert_image_fid_1',
+      'table' => 'node_data_field_advert_image',
+      'field' => 'field_advert_image_fid',
+      'relationship' => 'none',
+      'override' => array(
+        'button' => 'Use default',
+      ),
+    ),
+  ));
+  $handler->override_option('filters', array(
+    'type' => array(
+      'operator' => 'in',
+      'value' => array(
+        'forum_advert' => 'forum_advert',
+      ),
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'type',
+      'table' => 'node',
+      'field' => 'type',
+      'relationship' => 'none',
+    ),
+    'status' => array(
+      'operator' => '=',
+      'value' => '1',
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'status',
+      'table' => 'node',
+      'field' => 'status',
+      'override' => array(
+        'button' => 'Use default',
+      ),
+      'relationship' => 'none',
+    ),
+    'field_advert_all_forums_value' => array(
+      'operator' => '=',
+      'value' => array(
+        'value' => '1',
+        'min' => '',
+        'max' => '',
+      ),
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'field_advert_all_forums_value',
+      'table' => 'node_data_field_advert_all_forums',
+      'field' => 'field_advert_all_forums_value',
+      'override' => array(
+        'button' => 'Use default',
+      ),
+      'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('block_description', 'Adverts display block - all forums');
   $handler->override_option('block_caching', -1);
 
   $views[$view->name] = $view;

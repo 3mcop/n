@@ -11,7 +11,7 @@ $items[] = array (
   'type' => 'forum_advert',
   'trigger_values' => 
   array (
-    0 => '0',
+    2 => '2',
   ),
 );
 return $items;

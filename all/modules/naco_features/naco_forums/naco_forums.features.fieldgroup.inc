@@ -14,11 +14,11 @@ function naco_forums_fieldgroup_default_groups() {
     'label' => 'Where to display advert',
     'settings' => array(
       'form' => array(
-        'style' => 'fieldset_collapsed',
-        'description' => '<strong>Ignore these settings for now. These will be implemented if certain issues are fixed in Drupal Views.</strong>',
+        'style' => 'fieldset_collapsible',
+        'description' => '',
       ),
       'display' => array(
-        'description' => 'Ignore these settings for now. These will be implemented if certain issues are fixed in Drupal Views.',
+        'description' => '',
         'teaser' => array(
           'format' => 'fieldset',
           'exclude' => 0,

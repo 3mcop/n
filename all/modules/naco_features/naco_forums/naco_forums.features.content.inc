@@ -42,7 +42,7 @@ function naco_forums_content_default_fields() {
     ),
     'widget_active' => '1',
     'type' => 'number_integer',
-    'required' => '0',
+    'required' => '1',
     'multiple' => '0',
     'module' => 'number',
     'active' => '1',
@@ -50,8 +50,9 @@ function naco_forums_content_default_fields() {
     'suffix' => '',
     'min' => '',
     'max' => '',
-    'allowed_values' => '1|All forums
-0|No - choose forums...',
+    'allowed_values' => '0|No forums
+1|All forums
+2|Choose forums...',
     'allowed_values_php' => '',
     'widget' => array(
       'default_value' => array(
@@ -60,7 +61,7 @@ function naco_forums_content_default_fields() {
         ),
       ),
       'default_value_php' => NULL,
-      'label' => 'Display in all forums?',
+      'label' => 'Display in which forums?',
       'weight' => '-1',
       'description' => '',
       'type' => 'optionwidgets_buttons',
@@ -295,7 +296,7 @@ function naco_forums_content_default_fields() {
     ),
     'widget_active' => '1',
     'type' => 'number_integer',
-    'required' => '0',
+    'required' => '1',
     'multiple' => '0',
     'module' => 'number',
     'active' => '1',
@@ -450,7 +451,7 @@ function naco_forums_content_default_fields() {
   t('Advert image');
   t('Advertiser link');
   t('Constituency association');
-  t('Display in all forums?');
+  t('Display in which forums?');
   t('Forums');
   t('Name');
   t('Show on top level forums page?');
