@@ -82,7 +82,7 @@ function naco_forums_context_default_contexts() {
   $context->disabled = FALSE; /* Edit this to true to make a default context disabled initially */
   $context->api_version = 3;
   $context->name = 'forums_top_level_for_anon';
-  $context->description = 'Only the top level page of the forums, only for anonymous users';
+  $context->description = 'Only the top level page of the forums, only for anonymous users (+admins so they get edit/configure links.)';
   $context->tag = 'Forums';
   $context->conditions = array(
     'path' => array(
@@ -92,7 +92,9 @@ function naco_forums_context_default_contexts() {
     ),
     'user' => array(
       'values' => array(
+        'NACO Admin' => 'NACO Admin',
         'anonymous user' => 'anonymous user',
+        'site administrator' => 'site administrator',
       ),
     ),
   );
@@ -103,7 +105,7 @@ function naco_forums_context_default_contexts() {
           'module' => 'nodeblock',
           'delta' => 105,
           'region' => 'content_top',
-          'weight' => 10,
+          'weight' => 0,
         ),
       ),
     ),
@@ -113,7 +115,7 @@ function naco_forums_context_default_contexts() {
   // Translatables
   // Included for use with string extractors like potx.
   t('Forums');
-  t('Only the top level page of the forums, only for anonymous users');
+  t('Only the top level page of the forums, only for anonymous users (+admins so they get edit/configure links.)');
   $export['forums_top_level_for_anon'] = $context;
 
   return $export;
