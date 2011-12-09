@@ -918,6 +918,10 @@ display:none;
   min-height: 150px;
 }
 
+.block-views {
+  clear: both;
+}
+
 .block-content-inner .view-forum-adverts-admin .views-row {
   float: left;
   margin-right: 6px;
