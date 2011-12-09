@@ -294,7 +294,7 @@ function naco_forums_views_default_views() {
       'empty_zero' => 0,
       'hide_alter_empty' => 1,
       'value' => '<?php
-  if ( $data->node_data_field_advert_image_field_advert_all_forums_value ) {
+  if ( $data->node_data_field_advert_image_field_advert_all_forums_value == 1 ) {
     return t(\'All forums\');
   }
   else {
