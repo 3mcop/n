@@ -22,17 +22,11 @@ function naco_forums_context_default_contexts() {
   $context->reactions = array(
     'block' => array(
       'blocks' => array(
-        'views-forum_adverts_admin-block_3' => array(
-          'module' => 'views',
-          'delta' => 'forum_adverts_admin-block_3',
-          'region' => 'content_top',
-          'weight' => 0,
-        ),
         'views-forum_adverts_admin-block_1' => array(
           'module' => 'views',
           'delta' => 'forum_adverts_admin-block_1',
           'region' => 'content_top',
-          'weight' => 1,
+          'weight' => 0,
         ),
       ),
     ),
