@@ -1,10 +1,9 @@
 <?php
-// $Id: webform_handler_field_form_body.inc,v 1.1.2.1 2010/03/03 02:51:31 quicksketch Exp $
 
 /**
-* @file
-* Views handler to display the content of a webform form.
-*/
+ * @file
+ * Views handler to display the content of a webform form.
+ */
 
 /**
  * Field handler to present the Webform form body to the user.
@@ -30,7 +29,9 @@ class webform_handler_field_form_body extends views_handler_field {
     $node = node_load($values->{$this->aliases['nid']});
 
     if (node_access('view', $node)) {
-      $form_body = node_view($node, FALSE, FALSE);
+      // Populate $node->content['webform'] by reference.
+      webform_node_view($node, FALSE, FALSE);
+      $form_body = isset($node->content['webform']['#value']) ? $node->content['webform']['#value'] : NULL;
     }
     else {
       return;
